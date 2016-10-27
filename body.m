@@ -38,6 +38,39 @@ classdef Body < handle
             %input: body object, marker [3x1]
             body.markers{length(markers) + 1} = newMarker; 
         end
+        
+        %getters
+        function A = get.A()
+            A = MatOp.A2P(body.p);
+        end
+        
+        
+        methods(Access = private)
+            
+        %body static type and dimension checking
+        function dimCheck(body)
+            if ~isequal(size(body.ID),[1 1])   || ~isnumeric(body.ID)
+                error('ID is not a number')
+            end
+            if ~isequal(size(body.r),[3 1])    || ~isnumeric(body.r)
+                error('r is not a [3x1] matrix')
+            end
+            if ~isequal(size(body.p),[4 1])    || ~isnumeric(body.p)
+                error('p is not a [4x1]')
+            end
+            if ~isequal(size(body.rdot),[4 1]) || ~isnumeric(body.rdot)
+                error('rdot is not a [4x1]')
+            end
+            if ~isequal(size(body.pdot),[4 1]) || ~isnumeric(body.pdot)
+                error('pdot is not a [4x1]')
+            end
+            if ~isequal(size(body.rddot),[4 1])|| ~isnumeric(body.rddot)
+                error('rddot is not a [4x1]')
+            end
+            if ~isequal(size(body.pddot),[4 1])|| ~isnumeric(body.pddot)
+                error('pddot is not a [4x1]')
+            end
+            
             
     end
     
