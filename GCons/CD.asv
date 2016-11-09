@@ -10,7 +10,6 @@ classdef CD
         
     
     properties
-        fisFunction;
         ID;              %should the ID be used to populate the jacobian?
         DOFremoved = 1;  %DOF removed
         constType;       % 'd' specifies driving, 'k' specifies kinematic
@@ -103,11 +102,10 @@ classdef CD
             ri  = (cd.bodyj.r +cd.bodyj.A*cd.bodyj.markers{cd.Qj});
             rj  = (cd.bodyi.r +cd.bodyi.A*cd.bodyi.markers{cd.Pi});
             dij = rj-ri; 
-            phi = cd.c'*dij  - Ft;
+            phi = cd.c'*dij  -Ft;
         end
         
         function nu = get.nu(cd)
-            nu = Ftdot
         end
         
         function gamma = get.gamma(cd)

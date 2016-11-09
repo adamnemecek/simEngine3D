@@ -45,21 +45,25 @@ classdef DP1
         
         %getters for dependent properties
         function aiBar = get.aiBar() %9.26 slide 10
-            aiBar = dp1.bodyi.markers(Qi)-dp1.bodyi.markers(Pi);
+            aiBar = dp1.bodyi.markers{Qi}-dp1.bodyi.markers{Pi};
         end
         
         function ajBar = get.ajBar() %9.26 slide 10
-            ajBar = dp1.bodyj.markers(Qj)-dp1.bodyi.markers(Pj);
+            ajBar = dp1.bodyj.markers{Qj}-dp1.bodyi.markers{Pj};
         end
         
         function phi = get.phi() %9.26 slide 11
+            %phi = aiBar'* Ai'* Aj * ajBar
+            phi = (aiBar' * dp1.bodyi.A')*(dp1.bodyj.A * ajBar) - dp1.f;
+        end
+        
+        function nu = get.nu() %9.26 slide 12
+            nu = dp1.fdot;
+        end
+        
+        function gamma = get.gamma()% 9.26 slide 12
+            gamma = 
             
-        end
-        
-        function nu = get.nu()
-        end
-        
-        function gamma = get.gamma()
         end
        
         function phiR = phiR()

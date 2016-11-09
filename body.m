@@ -1,51 +1,94 @@
 classdef Body < handle
     %Body class defines a rigid body and its associated makers
-   
-    
     properties
-        ID; %identifying number for the body
+        ID;   %identifying number for the body
         
         %kinematics
-        r; % [x,y,z] vector defining the location of the body in the global RF
-        p; % [e0,e1,e2,e3] vector defining the oriation
-        pdot; %time derivative of p
+        r;      %[x,y,z]' vector defining the location of the body in the G-RF
+        rdot;   %d/dt[x,y,z]' 
+        rddot;  %d2t/dt2[x,y,z]'
+        p;      %[e0,e1,e2,e3]' vector defining the orientation of the body relative to G-RF
+        pdot;   %time derivative of p
+        pddot;  %2nd time derivative of p
         
         %mass properties
-        m; %[1x1] defining the mass of the ridgid body in kg
-        I; %[3x3] inertia tensor of the ridgid body
+        m;       %[1x1] defining the mass of the ridgid body in kg
+        I;       %[3x3] inertia tensor of the ridgid body
         
         %markers - used to define constraints
-        markers{1} = [0,0,0]'; % cell array of markers, accessed by their index 
-                 % ex) body.markers{1} -> [0,0,0]
-                 %first marker should always be the origin
-        
+        bodyType;%string indicating if the body is 'ground' or 'free'
+        markers = {};
+    end
+    
+    properties (Dependent)
+        A; %rotation matrix A of the body
+        nMarkers; %total # of markers on the body
     end
     
     methods
-        %default constructor
-        function body = makeBody(ID,r,p,pdot,m,I,markers)
+        function body = Body(ID,bodyType) %default constructor
             body.ID = ID;
+            body.bodyType = bodyType;
+            body.markers{1} = [0,0,0]; %first marker is origin
+            
+            r = [0 0 0]';
+            p = [0 0 0 0]';
+            body.setKinematics(r,p);
+        end
+        
+        function setKinematics(body,r,p,rdot,pdot,rddot,pddot)
+            %handle underspecified kinematics gracefully
+            if ~exist('rdot','var')
+                rdot = [0 0 0]';
+            end
+            if ~exist('pdot','var')
+                pdot =[0 0 0 0]';
+            end
+            if ~exist('rddot','var')
+                rddot=[0 0 0]';
+            end
+            if ~exist('pddot','var')
+                pddot = [0 0 0 0]';
+            end
+            
+            %specified properties to body
             body.r = r;
             body.p = p;
+            body.rdot = rdot;
             body.pdot = pdot;
-            body.m = m;
-            body.I = I;
-            body.markers = markers;
+            body.rddot =rddot;
+            body.pddot = pddot;
+            
+            %perform dimension check
+            body.dimCheck()
+            
         end
+        
+%         function setMassProperties(m,I);
+%            %future
+%         end
             
         %add marker to list of markers
         function appendMarker(body, newMarker)
-            %input: body object, marker [3x1]
-            body.markers{length(markers) + 1} = newMarker; 
+             %add a critical point(maker) that will be used
+              %in the definition of contraints
+            %input: 
+                %body -instance of body class
+                %marker [3x1] point in L-RF
+            body.markers{length(body.markers) + 1} = newMarker; 
         end
         
         %getters
-        function A = get.A()
-            A = MatOp.A2P(body.p);
+        function A = get.A(body)
+            A = MatOp.P2A(body.p);
         end
         
-        
-        methods(Access = private)
+        function nMarkers = get.nMarkers(body)
+            nMarkers = length(body.markers);
+        end
+    end
+    
+    methods(Access = private)
             
         %body static type and dimension checking
         function dimCheck(body)
@@ -58,20 +101,18 @@ classdef Body < handle
             if ~isequal(size(body.p),[4 1])    || ~isnumeric(body.p)
                 error('p is not a [4x1]')
             end
-            if ~isequal(size(body.rdot),[4 1]) || ~isnumeric(body.rdot)
-                error('rdot is not a [4x1]')
+            if ~isequal(size(body.rdot),[3 1]) || ~isnumeric(body.rdot)
+                error('rdot is not a [3x1]')
             end
             if ~isequal(size(body.pdot),[4 1]) || ~isnumeric(body.pdot)
                 error('pdot is not a [4x1]')
             end
-            if ~isequal(size(body.rddot),[4 1])|| ~isnumeric(body.rddot)
-                error('rddot is not a [4x1]')
+            if ~isequal(size(body.rddot),[3 1])|| ~isnumeric(body.rddot)
+                error('rddot is not a [3x1]')
             end
             if ~isequal(size(body.pddot),[4 1])|| ~isnumeric(body.pddot)
                 error('pddot is not a [4x1]')
             end
-            
-            
+        end
     end
-    
 end
