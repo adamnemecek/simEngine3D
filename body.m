@@ -23,6 +23,7 @@ classdef Body < handle
     properties (Dependent)
         A; %rotation matrix A of the body
         nMarkers; %total # of markers on the body
+        isGround;
     end
     
     methods
@@ -80,11 +81,42 @@ classdef Body < handle
         
         %getters
         function A = get.A(body)
+            %returns [3x3] A matrix, calculated from the euler parameters P
+            %[4x1] of the body
             A = MatOp.P2A(body.p);
         end
         
         function nMarkers = get.nMarkers(body)
             nMarkers = length(body.markers);
+        end
+        
+        function B = Bp(body,markerInd)
+            % input:
+            %   markerInd - integer index of the marker number
+            %   p (implicit) - [4x1]
+            % output: 
+            %   [3x4] B matrix
+            B = MatOp.calcB(body.p, body.markers(markerInd));
+        end
+            
+            
+        function B = Bpdot(body,markerInd)
+            % input:
+            %   markerInd - integer index of the marker number
+            %   pdot (implicit) - [4x1]
+            % output: 
+            %   [3x4] B matrix
+            B = MatOp.calcB(body.pdot, body.markers(markerInd));
+        end
+            
+        
+        function isGround = ground(body)
+            %by convension, the ground will be labeled with ID 0
+            if body.ID == 0
+                isGround = true;
+            else
+                isGround = false;
+            end
         end
     end
     

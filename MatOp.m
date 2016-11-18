@@ -53,8 +53,8 @@ classdef MatOp
         end
         
         function B = calcB(p,aBar) %9.28 slide 12
-            %input: p [4x1] orientation vector
-                   %abar [3x1] position in L-RF
+            %input:  p [4x1] orientation vector
+            %        abar [3x1] position in L-RF
             e = p(2:4);
             etil = MatOp.tilde(e);
             %B = [[3x3]*[3x1] , [3x1][1x3] - [3x3]] = [3x4] 

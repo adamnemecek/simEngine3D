@@ -35,8 +35,10 @@ classdef CD
         nu;              %RHS of the velocity equation
         gamma;           %RHS of the acceleration equation
         phi;             %constraint equation
-        phi_r;           %partial derivative wrt r
-        phi_p;           %partial derivative wrt p
+        phi_ri;          %partial derivative of phi wrt ri
+        phi_rj;          %partial derivative of phi wrt rj
+        phi_pi;          %partial derivative of phi wrt pi
+        phi_pj;          %partial derivative of phi wrt pj
       
         
     end
@@ -88,8 +90,8 @@ classdef CD
             cd.Ft = Ft;                 %forcing function, constraint is driven in nozero, kinematic if otherwise
             cd.Ftdot = Ftdot;           %derivative of forcing function
             cd.Ftddot = Ftddot;         %2nd derivative of forcing function
-            cd.COI =COI ;               %coordinate of interest, specified as from the set ['x','y','z']
-            cd.c = cd.COI2C(c);         %store coordinate longterm in vector form to avoid computation
+            cd.COI =COI;                %coordinate of interest, specified as from the set ['x','y','z']
+            cd.c = cd.COI2C(COI);       %store coordinate longterm in vector form to avoid computation
             cd.t = t;                   %present discrete time step 
         end
         
@@ -111,17 +113,59 @@ classdef CD
         end
         
         function gamma = get.gamma(cd)
+            %gamma is the RHS of the acceleration equation.
+            %dim gamma = [1x1]
+            %formula from S8 lecture 10.16
+            gamma = cd.c'*bodyi.Bpdot(Pi)*bodyi.pdot ...
+                  - cd.c'*bodyj.Bpdot(Qj)*bodyj.pdot  + ftddot;
+            
+            
         end
         
-        function phi_r = get.phi_r(cd)
+        function phi_ri = get.phi_ri(cd)
+            %phi_ri is the partial derivative of phi wrt the positional
+            %coordinates of body i. phi_ri is a [1x3] matrix if body i is
+            %free (not ground) and is a [0x0] matrix if body i is ground
+            %these formula were taken from S17, 9.28 lecture
+            if cd.bodyi.isGround
+                phi_ri = [];
+            else %body is free
+                phi_ri = cd.c'
+            end
         end
         
-        function phi_p = get.phi_P(cd)
+        function phi_ri = get.phi_rj(cd)
+            %see above for documentation
+            if cd.bodyj.isGround
+                phi_rj = [];
+            else %body is free
+                phi_rj = cd.c'
+            end
+        end
+        
+        function phi_pi = get.phi_pi(cd)
+            %phi_pi is the derivative of phi wrt the orientational
+            %coordinates of body i. phi_pi is a [1x4] vector when body i is
+            %free, and a [0x0] vector if body i is ground. these formulas
+            %were taken from S17 9.28 lecture
+            if bodyi.isground
+                phi_pi = [];
+            else
+                phi_pi = -cd.c'*bodyi.Bp(Pi);
+            end
+        end
+        
+        function phi_pj = get.phi_pj(cd)
+            %look above for documentation
+            if bodyj.isground
+                phi_pj = [];
+            else
+                phi_pj = cd.c'*bodyj.Bp(Qj);
+            end
+            
         end
   
-        
-        
-    end
+    end  
         
         methods (Access = private)
             function c = COI2C(COI)
