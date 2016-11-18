@@ -123,9 +123,9 @@ for t = h:h:20 %start:step:stop
 end
 
 %plot x,y,t
-plot(t,xt);
-hold on;
-plot(t,yt);
+% plot(t,xt);
+% hold on;
+% plot(t,yt);
 
 
 %at the supplied initial conditions, the values for xdot and ydot evaluate
@@ -155,7 +155,7 @@ imshow('ysqrd.png');
 %b)generate a convergence plot using backwards euler
 %%
 %constants:
-h = [.05 .05 .01 .005 .001]; %decreasing values of h
+h = [.05 .01 .005 .001]; %decreasing values of h
 tStart =1; %sec
 tEnd = 10; %sec
 epsilon =.0001;
@@ -205,32 +205,31 @@ for t = tStart:h(i):tEnd %start:step:stop
 end
 
 %store difference between final numerical and analytical solution
-error(i) = abs(y_ana(t) - y_n); 
+error1(i) = abs(y_ana(t) - y_n); 
 
-%plot x,y,t
-hold on
-plot(tVect,yt);
-title('numerical approximations of decreasing step size h')
+% %plot x,y,t
+% hold on
+% plot(tVect,yt);
+% title('numerical approximations of decreasing step size h')
 
 end
 
 figure;
-plot(log2(h),log2(error), '-bs');
+plot(log2(h),log2(error1), '-bs');
 title('convergence Analysis, Backwards Euler')
 xlabel('log2(h)')
-ylabel('log2(error) @ t = 20seconds')
-
+ylabel('log2(error) @ t = 10 seconds')
 
 
 %% C) generate a convergence plot for an order 4 BDF which approximates the
 %solution of the above IVP
 
 %BDF co-efficients: 
-A = [1 -48/25 36/25 -16/25 3/25] %alpha values
+A = [48/25 -36/25 16/25 -3/25]; %alpha values
 B = [12/25]; %beta values
 
 %constants:
-h = [.05 .05 .01 .005 .001]; %decreasing values of h
+h = [.05 .01 .005 .001]; %decreasing values of h
 tStart =1; %sec
 tEnd = 10; %sec
 epsilon =.0001;
@@ -239,65 +238,76 @@ epsilon =.0001;
 y1 = 1;
 
 %functions
-dfdt = @(yVect, t) 3*yVect(1)*t^3 + 2*yVect(2)*t + yVect(3)
-
+y_ana = @(t)  1/t + 1/t^2*(tan(1/t + pi -1)); %analytical expression for y
+ydot  = @(y_n,t) -y_n^2 - 1/t^4;
+jac   = @(y_n,h) 1 + h*12/25*2*y_n; %jacobian = d/dy_n(g)
+g     = @(y,h,t,n) y(n) - A(1)*y(n-1) - A(2)*y(n-2) - A(3)*y(n-3) - A(4)*y(n-4) - B*h*ydot(y(n), t);
+ 
 for i = 1:length(h);
 
 %reset initial conditions and plot variables   
-y_n = y1;
 tVect = tStart:h(i):tEnd;
 y = zeros(length(tVect),1);
 j = 1; %plot counter
-tstart = tStart + 4 * h(i);
+n = 5; %5th time step
+tstart = tStart + n * h(i); %start BDF at 5th time step
 
 %use the analytical solution to prime the BDF method 
 for ind = 1:4
-    y(ind) = y_ana(ind*h(i));
+    y(ind) = y_ana(tStart + (ind - 1)*h(i));
 end
-n = 5; %set the counter for n
 
 for t = tstart:h(i):tEnd %start:step:stop
-    
-    %generate a 4th order polymomial that approximates y(t) @ current y
-        %y = at^3 +bt^2 +ct + d, find co-efficients abcd, via A*coff = y
-    coff = zeros(4,1);
-    A = [tVect(n-4)^3 , tVect(n-4)^2 , tVect(n-4) , 1;
-         tVect(n-3)^3 , tVect(n-3)^2 , tVect(n-3) , 1;
-         tVect(n-2)^3 , tVect(n-2)^2 , tVect(n-2) , 1;
-         tVect(n-1)^3 , tVect(n-1)^2 , tVect(n-1) , 1 ];
-    yVect = [y(n-4), y(n-3), y(n-2), y(n-1)]'; 
-    coff = A^-1 * yVect; % coff = [a b c d]'
-   
+  
     %use forward euler to generate first guess of Y_n
-    y(n) = y(n-1) + h(i)*dfdt(yVect,t);
+    y(n) = A(1)*y(n-1) + A(2)*y(n-2) + A(3)*y(n-3) + A(4)*y(n-4) + B*h(i)*ydot(y(n-1),(t - h(i)));
     
     %set delta large
-    delta = 1;
+    delta = 0;
     
      %newton rapson iterations -> J*delta = -G
-    while(delta > epsilon)
+    while(abs(delta) > epsilon)
         % 1x1           1                           1x1
-        delta = jac(y_np1,h(i))^-1  * -g(y_np1,y_n,h(i),t + h(i)); 
-        y_np1 = y_np1 + delta;
+        delta = jac(y(n),h(i))^-1  * -g(y,h(i),t,n); 
+        y(n)= y(n) + delta;
     end
     
-    % append values to plot variables
-    yt(j) = y_np1;
-    j = j + 1;
-    
-    %increment y
-    y_n = y_np1;
+    %increment n
+    n = n + 1;
    
 end
 
-%store difference between final numerical and analytical solution
-error(i) = abs(y_ana(t) - y_n); 
+%store difference between (4th)from final numerical and analytical solution
+error2(i) = abs(y_ana(t -4*h(i)) - y(n-4)); 
 
-%plot x,y,t
-hold on
-plot(tVect,yt);
-title('numerical approximations of decreasing step size h')
+% %plot x,y,t
+% hold on
+% plot(tVect,y);
+% title('numerical approximations of decreasing step size h')
 
 end
 
+%figure;
+plot(log2(h),log2(error2), '-rs');
+title('convergence Analysis BDF order 4')
+xlabel('log2(h)')
+ylabel('log2(error) @ t = 10 seconds')
 
+
+%% compare BDF order 4 to Backwards Euler
+
+%by inspection, the BDF of order 4 seems to have less error at the same
+%step size the slopes seem to converging, like the lines will cross at high
+%step size
+
+plot(log2(h),log2(error2), '-rs');
+title('convergence Analysis BDF order 4')
+xlabel('log2(h)')
+ylabel('log2(error) @ t = 10 seconds')
+
+hold on 
+
+plot(log2(h),log2(error1), '-bs');
+title('convergence Analysis, Backwards Euler')
+xlabel('log2(h)')
+ylabel('log2(error) @ t = 20seconds')
