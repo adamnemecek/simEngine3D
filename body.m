@@ -88,27 +88,7 @@ classdef Body < handle
         
         function nMarkers = get.nMarkers(body)
             nMarkers = length(body.markers);
-        end
-        
-        function B = Bp(body,markerInd)
-            % input:
-            %   markerInd - integer index of the marker number
-            %   p (implicit) - [4x1]
-            % output: 
-            %   [3x4] B matrix
-            B = MatOp.calcB(body.p, body.markers(markerInd));
-        end
-            
-            
-        function B = Bpdot(body,markerInd)
-            % input:
-            %   markerInd - integer index of the marker number
-            %   pdot (implicit) - [4x1]
-            % output: 
-            %   [3x4] B matrix
-            B = MatOp.calcB(body.pdot, body.markers(markerInd));
-        end
-            
+        end 
         
         function isGround = ground(body)
             %by convension, the ground will be labeled with ID 0

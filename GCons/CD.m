@@ -10,7 +10,6 @@ classdef CD
         
     
     properties
-        fisFunction;
         ID;              %should the ID be used to populate the jacobian?
         DOFremoved = 1;  %DOF removed
         constType;       % 'd' specifies driving, 'k' specifies kinematic
@@ -105,19 +104,19 @@ classdef CD
             ri  = (cd.bodyj.r +cd.bodyj.A*cd.bodyj.markers{cd.Qj});
             rj  = (cd.bodyi.r +cd.bodyi.A*cd.bodyi.markers{cd.Pi});
             dij = rj-ri; 
-            phi = cd.c'*dij  - Ft;
+            phi = cd.c'*dij  - cd.Ft;
         end
         
         function nu = get.nu(cd)
-            nu = Ftdot
+            nu = cd.Ftdot;
         end
         
         function gamma = get.gamma(cd)
             %gamma is the RHS of the acceleration equation.
             %dim gamma = [1x1]
-            %formula from S8 lecture 10.16
-            gamma = cd.c'*bodyi.Bpdot(Pi)*bodyi.pdot ...
-                  - cd.c'*bodyj.Bpdot(Qj)*bodyj.pdot  + ftddot;
+            %formula from S8 lecture 10.7
+            gamma = cd.c'*cd.bodyi.Bpdot(Pi)*cd.bodyi.pdot ...
+                  - cd.c'*cd.bodyj.Bpdot(Qj)*cd.bodyj.pdot  + ftddot;
             
             
         end
@@ -130,7 +129,7 @@ classdef CD
             if cd.bodyi.isGround
                 phi_ri = [];
             else %body is free
-                phi_ri = cd.c'
+                phi_ri = cd.c';
             end
         end
         
@@ -139,7 +138,7 @@ classdef CD
             if cd.bodyj.isGround
                 phi_rj = [];
             else %body is free
-                phi_rj = cd.c'
+                phi_rj = cd.c';
             end
         end
         
@@ -151,7 +150,7 @@ classdef CD
             if bodyi.isground
                 phi_pi = [];
             else
-                phi_pi = -cd.c'*bodyi.Bp(Pi);
+                phi_pi = -cd.c'*MatOp.B(cd.bodyi.p,cd.bodyi.markers{cd.Pi});
             end
         end
         
@@ -160,7 +159,7 @@ classdef CD
             if bodyj.isground
                 phi_pj = [];
             else
-                phi_pj = cd.c'*bodyj.Bp(Qj);
+                phi_pj = cd.c'*MatOp.B(cd.bodyj.p,cd.bodyj.markers{cd.Qj});
             end
             
         end
