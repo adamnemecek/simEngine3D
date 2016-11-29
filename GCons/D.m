@@ -59,8 +59,8 @@ classdef D
         
         function dijdot = get.dijdot(d)
             %returns the derivative of the distance vector [3x1]
-            dijdot = d.bodyj.rdot + MatOp.B(d.bodyj.p, d.bodyj.marker{Qj})*d.bodyj.pdot ...
-                    -d.bodyi.rdot + MatOp.B(d.bodyi.p, d.bodyi.marker{Pi})*d.bodyi.pdot;
+            dijdot = d.bodyj.rdot + MatOp.B(d.bodyj.p, d.bodyj.marker{d.Qj})*d.bodyj.pdot ...
+                    -d.bodyi.rdot + MatOp.B(d.bodyi.p, d.bodyi.marker{d.Pi})*d.bodyi.pdot;
         end
         
         function phi = get.phi(d) %9.26 slide 17

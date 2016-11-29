@@ -73,16 +73,16 @@ classdef DP1
         function gamma = get.gamma(dp1)% 10.7 slide 8
             %gamma [1x1] is the RHS of the acceleration equation
             ai = dp1.bodyi.A*dp1.aiBar; % a = A*abar
-            bpdotj = Matop.B(dp1.bodyj.pdot, dp1.ajBar);
+            bpdotj = MatOp.B(dp1.bodyj.pdot, dp1.ajBar);
             pdotj = dp1.bodyj.pdot;
             aj = dp1.bodyj.A*dp1.ajBar;
-            bpdoti = Matop.B(dp1.bodyi.pdot, dp1.aiBar);
+            bpdoti = MatOp.B(dp1.bodyi.pdot, dp1.aiBar);
             pdoti = dp1.bodyi.pdot;
-            adoti = Matop.B(dp1.bodyi.p, dp1.aiBar)*dp1.bodyi.pdot; %aidot = B(p,abar)*pdot
-            adotj = Matop.B(dp1.bodyj.p, dp1.ajBar)*dp1.bodyj.pdot;
+            adoti = MatOp.B(dp1.bodyi.p, dp1.aiBar)*dp1.bodyi.pdot; %aidot = B(p,abar)*pdot
+            adotj = MatOp.B(dp1.bodyj.p, dp1.ajBar)*dp1.bodyj.pdot;
             
             
-            gamma = -ai'*bpdotj*pdotj - aj'*bpdoti*pdoti - 2*adoti'*adotj + d1.fddot;
+            gamma = -ai'*bpdotj*pdotj - aj'*bpdoti*pdoti - 2*adoti'*adotj + dp1.fddot;
             
         end
        
@@ -93,7 +93,7 @@ classdef DP1
             if dp1.bodyi.isground
                 phi_ri = [];
             else
-                phi_ri = [0 0 0]
+                phi_ri = [0 0 0];
             end
         end
         
@@ -114,7 +114,7 @@ classdef DP1
             %orientational coordinates of bodyi. If bodyi is the ground
             %then phi_pi is [0x0]
             if dp1.bodyi.isground
-                phi_pi = []
+                phi_pi = [];
             else
                 phi_pi = (dp1.bodyj.A*dp1.ajBar)'*MatOp.B(dp1.bodyi.p, dp1.aiBar);
             end
