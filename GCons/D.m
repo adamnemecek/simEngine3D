@@ -8,6 +8,7 @@ classdef D
     %rather than an explicit function of time
     
     properties
+        DOFremoved = 1;  %DOF removed
         bodyi; %instance of a body object, i 
         bodyj; %instance of a body object, j
         %these point definitions are taken from S10 lecture 9.2
@@ -22,11 +23,13 @@ classdef D
     
     %calculated values 
     properties(Dependent)
-        dij %vector in G-RF representing the distance from Pi to Qj
-        dijdot;%derivative of above
-        phi; %jacobian
-        nu;  %  - d/dt(Phi)
+        dij     %vector in G-RF representing the distance from Pi to Qj
+        dijdot; %derivative of above
+        phi;    %constraint equation      [2x1] 
+        nu;     %-d/dt(Phi)
         gamma; %RHS of acceleration equation
+        
+        %constraint jacobian components
         phi_ri;%derivative of phi wrt ri
         phi_rj;%derivative of phi wrt rj
         phi_pi;%derivative of phi wrt pi

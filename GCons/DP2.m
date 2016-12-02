@@ -6,6 +6,7 @@ classdef DP2
     %certian value, F(t), which is frequently a constant
     
     properties
+        DOFremoved = 1;  %DOF removed
         bodyi; %instance of a body object, i 
         bodyj; %instance of a body object, j
         
