@@ -45,6 +45,8 @@ classdef DP1
             dp1.Pi = Pi;
             dp1.Qj = Qj;
             dp1.Pj = Pj;
+            
+            %!!add code here to prevent failure when f, fdot, fddot and t are neglected!! 
             dp1.f = f;
             dp1.fdot = fdot;
             dp1.fddot = fddot;

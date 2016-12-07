@@ -21,21 +21,11 @@ classdef B1
         biTail; %index of a [3x1] marker contained within bodyj, representing tail of aiBar 
         cjHead; %index of a [3x1] marker contained within bodyi, representing head of aiBar
         cjTail; %index of a [3x1] marker contained within bodyj, representing tail of aiBar 
-  
-        %forcing fxns
-        f; %prescribed value that the dot product should assume
-        fdot; %derivative of above
-        fddot;%derivative of above 
-        t;  
-        
+ 
     end
     
     %calculated values 
     properties(Dependent)
-        aiBar; %vector in L-RF of body i        [3x1] 
-        biBar; %vector in L-RF of body i        [3x1] 
-        cjBar; %vector of L-RF of body j        [3x1]
-        
         phi;   %constraint equation             [2x1] 
         nu;    %-dPhi/ dt                       [2x1]
         gamma; %RHS of acceleration equation    [2x1]
@@ -49,7 +39,7 @@ classdef B1
     
     methods
         %constructor
-        function b1 = B1(bodyi,bodyj,aiHead,aiTail,biHead,biTail,cjHead,cjTail,f,fdot,fddot,t)
+        function b1 = B1(bodyi,bodyj,aiHead,aiTail,biHead,biTail,cjHead,cjTail)
             
             %bodies
             b1.bodyi = bodyi;
@@ -63,38 +53,15 @@ classdef B1
             b1.cjHead = cjHead;
             b1.cjTail = cjTail;
             
-            %forcing fxn
-            b1.f = f; 
-            b1.fdot = fdot;
-            b1.fddot = fddot;
-            b1.t = t;
-            
             %form basic Gcons which make up B1 Slide 
-            dp1_ac = DP1(b1.bodyi,b1.bodyj,b1.aiHead,b1.aiTail, b1.cjHead, b1.cjTail);
-            dp1_bc = DP1(b1.bodyi,b1.bodyj,b1.biHead,b1.biTail, b1.cjHead, b1.cjTail);
+            b1.dp1_ac = DP1(b1.bodyi,b1.bodyj,b1.aiHead,b1.aiTail, b1.cjHead, b1.cjTail);
+            b1.dp1_bc = DP1(b1.bodyi,b1.bodyj,b1.biHead,b1.biTail, b1.cjHead, b1.cjTail);
             
             
         end
         
 %--------------------getters for dependent properties-------------------------
         
-         function aiBar = get.aiBar(b1) 
-            %ai vector in the L-RF
-            aiBar = b1.bodyi.markers{b1.aiHead}-b1.bodyi.markers{b1.aiTail};
-         end
-         
-         function biBar = get.biBar(b1) 
-            %bi vector in L-RF
-            biBar = b1.bodyi.markers{b1.biHead}-b1.bodyi.markers{b1.biTail};
-         end
-         
-         function cjBar = get.cjBar(b1)
-            %cj vector in L-RF
-            cjBar = b1.bodyj.markers{b1.cjHead}-b1.bodyi.markers{b1.cjTail};
-         end
-        
-         
-         
         function phi = get.phi(b1)
             %phi [2x1] constraint equation
             phi = [b1.dp1_ac.phi , b1.dp1_bc.phi]';
@@ -145,6 +112,7 @@ classdef B1
           end
         
        
-
+    end
+end
     
 

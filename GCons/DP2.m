@@ -13,7 +13,8 @@ classdef DP2
         %these point definitions are taken from S13 lecture 9.26
         Pi; %index of a [3x1] marker contained within bodyi, representing head of SiBar
         Qj; %index of a [3x1] marker contained within bodyj, representing head of SjBar
-        ai; %index of a [3x1] marker contained within bodyi, representing the head of AiBar
+        aiHead; %index of a [3x1] marker contained within bodyi, representing the head of AiBar
+        aiTail; %index of a [3x1] marker contained within bodyi, representing the tail of AiBar
         f; %prescribed value that the dot product should assume
         fdot; %derivative of above
         fddot;%derivative of above 
@@ -25,9 +26,11 @@ classdef DP2
         aiBar; %vector AiBar the first vector in the DP2 constraint
         dij;   %distance in G-RF from point Pi to point Qj, the second vector in the DP2 constraint
         dijdot;%derivative of dij
+        
         phi; %jacobian
         nu;  % dPhi_dp2/ dt
         gamma; %RHS of acceleration equation
+        
         phi_ri;%derivative of phi wrt ri
         phi_rj;%derivative of phi wrt rj
         phi_pi;%derivative of phi wrt ri
@@ -39,19 +42,20 @@ classdef DP2
     
     methods
         %constructor
-        function dp2 = DP2(bodyi,bodyj,Pi,Qj,ai,f,fdot,fddot,t)
+        function dp2 = DP2(bodyi,bodyj,Pi,Qj,aiHead,aiTail,f,fdot,fddot,t)
             dp2.bodyi = bodyi;
             dp2.bodyj = bodyj;
             dp2.Pi = Pi;
             dp2.Qj = Qj;
-            dp2.ai = ai;
+            dp2.aiHead = aiHead;
+            dp2.aiTail = aiTail;
             dp2.f = f;
             dp2.fdot = fdot;
             dp2.fddot = fddot;
             dp2.t = t;
             
         end
-        %getters for dependent properties
+        %--------------getters for dependent properties--------------------
         
         %consider revision that makes dij an abstract method
           function dij = get.dij(dp2)
@@ -69,7 +73,7 @@ classdef DP2
         
         function aiBar = get.aiBar(dp2)
             % [3x1] local vector
-            aiBar = dp2.bodyi.markers{dp2.ai};
+            aiBar = dp2.bodyi.markers{dp2.aiHead} - dp2.bodyi.markers(dp1.aiTail);
         end
        
         function phi = get.phi(dp2) %9.26 slide 14
