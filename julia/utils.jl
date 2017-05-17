@@ -1,8 +1,8 @@
 
 #this may be moved in the future.
-push!(LOAD_PATH , "C:\\Users\\Alex\\Documents\\gitRepos\\simEngine3D")
+#push!(LOAD_PATH , "C:\\Users\\Alex\\Documents\\gitRepos\\simEngine3D")
 
-module Utils
+module utils
 """
 the utilities module provides utility functionality useful throughout
 Simbody3D
@@ -16,7 +16,7 @@ Simbody3D
 #   return P
 # end
 
-function B(p::Array{float64},sBar::Array{float64}) #9.28.2016 slide 12
+function B(p::Array{Float64},sBar::Array{Float64}) #9.28.2016 slide 12
   """
   B matrix = [A(p)sbar]_p is useful in calculating partial derivative of ϕ wrt GC's
   inputs: p = euler params [4x1], sBar = point location in LRF [3x1]
@@ -44,6 +44,14 @@ function tilde(a::Array{Float64})  #kinematic key formulas
         -a[2]  a[1]    0  ]
   return Atil
 end
+
+function dij(bi::Body,bj::Body,Si::Array,Sj::Array) #9.26.2017 slide 14
+  """determines the distance in the GRF between point Pi and Qj"""
+  return r(bj) + A(bj)*pt(bj,Sj) -(r(bi) + A(bi)*pt(bi,Si) )
+
+function dijdot(bi::Body,bj::Body,Si::Array,Sj::Array) #10.7.2017 slide 7
+"""time derivative of dij"""
+return rdot(bj)+ B(p(bj),Sj)*pdot(bj) -rdot(bi) - B(p(bi),Si)*pdot(bi)
 
 function insertUL!(A, h , ind)
   """
