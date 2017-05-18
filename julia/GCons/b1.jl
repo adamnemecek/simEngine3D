@@ -33,7 +33,7 @@ end
 
 #----------------begin functions associated with b1----------------------------
 
-function ϕ(con::b1)   #9.26.2016 - slide 20
+function ϕ(con::b1)   #9.26.2016 - slide 23
   """
   constraint equation ϕ
   output: [2 x 1] evaluation of constraint equation value
@@ -41,23 +41,23 @@ function ϕ(con::b1)   #9.26.2016 - slide 20
   phi = [ ϕ(subGCs[1]) ; ϕ(subGCs[2])]
 end
 
-function ν(con::b1)  #9.26.2016 - slide 21
+function ν(con::b1)
   """
   RHS of vel equation
-  output: [1 x 1] evaluation ν
+  output: [2 x 1] evaluation ν
   """
   nu = [ ν(subGCs[1]) ; ν(subGCs[2])]
 end
 
-function 	γ(con::b1)  #10.7.2016 - slide 8
-"""
-RHS of accel equation
-output: [2 x 1] evaluation ν
-"""
-gamma = [ γ(subGCs[1]) ; γ(subGCs[2])]
+function 	γ(con::b1)
+  """
+  RHS of accel equation
+  output: [2 x 1] evaluation ν
+  """
+  gamma = [ γ(subGCs[1]) ; γ(subGCs[2])]
 end
 
-function ϕ_r(con::b1)  #9.28.2016 slide 17
+function ϕ_r(con::b1)
   """
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
   output: ([2x3],[2x3])
@@ -68,13 +68,13 @@ function ϕ_r(con::b1)  #9.28.2016 slide 17
   return phi_r[:,1] , phi_r[:,2]
 end
 
-function ϕ_p(con::b1)  # #9.28.2016 slide 17
-"""
-partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
-output:([2x4],[2x4])
-"""
-phi_pi_1, phi_pj_1 = ϕ_p(subGCs[1])
-phi_pi_2, phi_pj_2 = ϕ_p(subGCs[2])
-phi_pi = [phi_pi_1 ; phi_pi_2] ; phi_pj = [phi_pj_1 ; phi_pj_2]
-return phi_pi , phi_pj
+function ϕ_p(con::b1)
+  """
+  partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
+  output:([2x4],[2x4])
+  """
+  phi_p = Array(Float64,con.rDOF,2)
+  phi_p[1,1], phi_p[1,2] = ϕ_p(subGCs[1])
+  phi_p[2,1], phi_p[2,2] = ϕ_p(subGCs[2])
+  return phi_p[:,1] , phi_p[:,2]
 end
