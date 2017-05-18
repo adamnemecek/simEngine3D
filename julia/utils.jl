@@ -1,8 +1,6 @@
 
 #this may be moved in the future.
 #push!(LOAD_PATH , "C:\\Users\\Alex\\Documents\\gitRepos\\simEngine3D")
-
-module utils
 """
 the utilities module provides utility functionality useful throughout
 Simbody3D
@@ -67,10 +65,4 @@ function insertUL!(A, h , ind)
   row, col = size(h)
   x , y = ind[1] , ind[2]
   A[x:x+row-1 ,y:y+col-1] = h
-end
-
-#export only needed to have non-dot access
-export P2A, tilde, insertUL!
-
-
 end

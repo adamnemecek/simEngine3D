@@ -1,16 +1,17 @@
 #GCons are Geometic Constraints
 include("..\\body.jl") #this needs work !!
-type d
+type cd
   """
-  The d or distance constraint requires that the absolute distance between a point
+  The cd or coordinate difference constraint requires that the absolute distance between a point
   Pi (on body i) and a second point Qj (on body j) maintain a particular magnitude greater than zero
-  d is one of 4 basic GCons that each remove one DOF
+  cd is one of 4 basic GCons that each remove one DOF
   """
   sim::Sim      #reference to the simulation data structures
-  bi::Body      #bi
-  bj::Body      #bj
+  bi::Body      #bodyi
+  bj::Body      #bodyj
   Pi::Int       #index of point p on body i (head)
   Qj::Int       #index of point Q on body j (head)
+  c::Array      #column vect specifying coord of interest [1 0 0]' for x
   rDOF::Int     #number of degrees of freedom removed by constraint
   f             #lambda function describing how constraint changes with time
   fdot          #lambda function describing how constraint changes with time
@@ -18,25 +19,25 @@ type d
 
 
   #constructor function
-  function d(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int, f = t->0 , fdot = t->0, fddot = t->0)
-    rDOF = 1; #d removes one DOF
-    new(sim,bi,bj,Pi,Qj,rDOF,f,fdot,fddot)
+  function d(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int,c::Array, f = t->0 , fdot = t->0, fddot = t->0)
+    rDOF = 1; #cd 1 removes one DOF
+    new(sim,bi,bj,Pi,Qj,c,rDOF,f,fdot,fddot)
   end
 end
 
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
-PiQj(con::d)  = dij(con.bi,cons.bj,pt(con.bi,con.Pi),pt(con.bj,con.Qj))
+PiQj(con::cd)  = dij(con.bi,cons.bj,pt(con.bi,con.Pi),pt(con.bj,con.Qj))
 
-function ϕ(con::d)   #9.26.2016 - slide 17
+function ϕ(con::cd)   #9.26.2016 - slide 20
   """
   constraint equation ϕ
   output: [1 x 1] evaluation of constraint equation value
   """
-  phi = PiQj(con)'PiQj(con) - con.f(con.sim.t)
+  phi = con.c'*PiQj(con) - con.f(con.sim.t)
 end
 
-function ν(con::d)  #9.26.2016 - slide 18
+function ν(con::cd)  #9.26.2016 - slide 21
   """
   RHS of vel equation
   output: [1 x 1] evaluation ν
@@ -44,38 +45,35 @@ function ν(con::d)  #9.26.2016 - slide 18
   nu = con.fdot(con.sim.t)
 end
 
-function 	γ(con::d)  #10.7.2016 - slide 8
+function 	γ(con::cd)  #10.7.2016 - slide 8
 """
 RHS of accel equation
 output: [1 x 1] evaluation ν
 """
 SiBar = pt(con.bi,con.Pi) ; SjBar = pt(con.bj,con.Qj)
 pdoti = pdot(con.bi) ; pdotj = pdot(con.bj)
-d_ijdot = dijdot(con.bi,con.bj,Si,Sj)
 
-gamma = -2*PiQj(con)'B(pdotj,SjBar)*pdotj + 2*PiQj(con)'B(pdoti,SiBar)pdoti - 2*d_ijdot'd_ijdot + con.fddot(con.sim.t)
+gamma = con.c'*B(pdoti,siBar)*pdoti - con.c'*B(pdotj,sjBar)*pdotj + con.fddot(con.sim.t)
 end
 
-function ϕ_r(con::d)  #9.28.2016 slide 15
+function ϕ_r(con::cd)  #9.28.2016 slide 17
   """
-  partial derivative of ϕ WRT position position GC's of both bi and bj
+  partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
   output: ([1x3],[1x3])
   """
-  phi_ri = -2*PiQj(con)'
-  phi_rj = -phi_ri
-  return phi_ri,phi_rj
+  return -con.c' , con.c'
 end
 
-function ϕ_p(con::d)  # #9.28.2016 slide 15
+function ϕ_p(con::cd)  # #9.28.2016 slide 17
 """
-partial derivative of ϕ WRT position orientation GC's of both bi and bj
+partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
 output:([1x4],[1x4])
 """
-SjBar = pt(con.bj,con.Qj) ; SiBar = pt(con.bi,con.Pi)
-Pj = p(con.bj) ; Pi = p(con.bi)
+SjBar = pt(con.bodyj,con.Qj) ; SiBar = pt(con.bodyi,con.Pi)
+Pj = p(con.bodyj) ; Pi = p(con.bodyi)
 
-phi_pi = -2*PiQj(con)'*B(Pi,SiBar)
-phi_pj =  2*PiQj(con)'*B(Pj,SjBar)
+phi_pi = -con.c'*B(Pi,SiBar)
+phi_pj =  con.c'*B(Pj,SjBar)
 
 return phi_pi , phi_pj
 end

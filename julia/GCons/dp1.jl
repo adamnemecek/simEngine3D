@@ -23,7 +23,7 @@ type dp1
   #constructor function
   function dp1(sim::Sim,bi::Body,bj::Body,Qi::Int,Qj::Int,Pi=1,Pj=1,f = t->0 , fdot = t->0, fddot = t->0)
     rDOF = 1; #dp1 removes one DOF
-    new(sim,bi,bj,Pi,Qi,Pj,Qj,rDOF,f,fdot,fddot) #make a new dp1
+    new(sim,bi,bj,Pi,Qi,Pj,Qj,rDOF,f,fdot,fddot)
   end
 end
 
@@ -66,7 +66,7 @@ end
 function ϕ_r(con::dp1)  #9.28.2016 slide 13
   """
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
-  output: ([1,3],[1,3]) vectors of
+  output: ([1x3],[1x3])
   """
   phi_ri = zero(1,3) ; phi_rj = zeros(1,3)
   return phi_ri , ph_rj
@@ -75,7 +75,7 @@ end
 function ϕ_p(con::dp1)  # #9.28.2016 slide 13
 """
 partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
-output:([1,4],[1,4])
+output:([1x4],[1x4])
 """
 phi_pi = aBarj(con)'*A(con.bodyj)'*B(p(cons.bodyi),aBari(con))
 phi_pj = aBari(con)'*A(con.bodyi)'*B(p(cons.bodyj),aBarj(con))

@@ -9,7 +9,7 @@ type dp2
   sim::Sim      #reference to the simulation data structures
   bodyi::Body   #bodyi
   bodyj::Body   #bodyj
-  Pi::Int       #index of point p on body i (tail)
+  Pi::Int       #index of point p on body i (head)
   Qj::Int       #index of point Q on body j (head)
   ai_head::Int  #index of the point at the head of vector ai
   ai_tail::Int  #index of the point at the tial of vector ai
@@ -22,15 +22,16 @@ type dp2
 
   #constructor function
   function dp2(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int,ai_head::Int, ai_tail = 1, f = t->0 , fdot = t->0, fddot = t->0)
-    rDOF = 1; #dp1 removes one DOF
-    new(sim,bi,bj,Pi,Qj,ai_head,ai_tail,f,fdot,fddot) #make a new dp1
+    rDOF = 1; #dp2 removes one DOF
+    new(sim,bi,bj,Pi,Qj,ai_head,ai_tail,rDOF,f,fdot,fddot)
   end
 end
 
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
 aBari(con::dp2) = pt(con.bodyi,con.ai_head) - pt(con.bodyi,con.ai_tail) #[3x1]
-PiQj(con::dp2)  = dij(con.bodyi,cons.bodyj,con.Pi,con.Qj)
+PiQj(con::dp2)  = dij(con.bodyi,cons.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
+
 function ϕ(con::dp2)   #9.26.2016 - slide 14
   """
   constraint equation ϕ
@@ -65,7 +66,7 @@ end
 function ϕ_r(con::dp2)  #9.28.2016 slide 15
   """
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
-  output: ([1,3],[1,3])
+  output: ([1x3],[1x3])
   """
   phi_ri = -aBari(con)'*A(con.bodyi)'
   phi_rj = -phi_ri;
@@ -75,11 +76,12 @@ end
 function ϕ_p(con::dp2)  # #9.28.2016 slide 15
 """
 partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
-output:([1,4],[1,4])
+output:([1x4],[1x4])
 """
 Sj = pt(con.bodyj,con.Qj) ; Si = pt(con.bodyi,con.Pi)  #these are bars
 ai = aBari(con)'*A(con.bodyi)
 Pj = p(con.bodyj) ; Pi = p(con.bodyi)
+
 phi_pi = PiQj(con)'*B(Pi,aiBar(con)) - ai'B(Pi,Si)
 phi_pj = ai'*B(Pj,Sj)
 
