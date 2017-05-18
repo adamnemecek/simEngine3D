@@ -19,7 +19,7 @@ type cd
 
 
   #constructor function
-  function d(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int,c::Array, f = t->0 , fdot = t->0, fddot = t->0)
+  function cd(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int,c::Array, f = t->0 , fdot = t->0, fddot = t->0)
     rDOF = 1; #cd 1 removes one DOF
     new(sim,bi,bj,Pi,Qj,c,rDOF,f,fdot,fddot)
   end

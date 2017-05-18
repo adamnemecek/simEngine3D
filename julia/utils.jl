@@ -14,21 +14,27 @@ Simbody3D
 #   return P
 # end
 
-function B(p::Array{Float64},sBar::Array{Float64}) #9.28.2016 slide 12
+function B(Pi::Array{Float64},siBar::Array{Float64}) #9.28.2016 slide 12
   """
   B matrix = [A(p)sbar]_p is useful in calculating partial derivative of ϕ wrt GC's
-  inputs: p = euler params [4x1], sBar = point location in LRF [3x1]
+  inputs: Pi = euler params [4x1], siBar = point location in LRF [3x1]
   output: B = [3x4]
   """
-  e0 = p[1]
-  e  = p[2:4]
-  b = 2*[(e0*eye(3) + tilde(e))*sBar   e*sBar' - (e0*eye(3) + tilde(e))*tilde(sBar) ]
+  e0 = Pi[1]
+  e  = Pi[2:4]
+  b = 2*[(e0*eye(3) + tilde(e))*siBar   e*siBar' - (e0*eye(3) + tilde(e))*tilde(siBar) ]
 end
 
-function P2A(P::Array{Float64})   #kinematic key formulas
+function G(Pi::Array{Float64})
+  e0 = Pi[1] ; e = Pi[2:4]
+  G = [-e , tilde(e) , e0*eye(3)]
+end
+
+
+function P2A(Pi::Array{Float64})   #kinematic key formulas
   """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
-  e0 = p[1]
-  e = p[2:4]
+  e0 = Pi[1]
+  e = Pi[2:4]
   E = [-e , tilde(e) , e0*eye(3)]
   G = [-e , tilde(e) , e0*eye(3)]
   A = EG'
