@@ -1,9 +1,9 @@
 #GCons are Geometic Constraints
 include("..\\body.jl") #this needs work !!
-type cj
+type rj
   """
-  The cj or cylindrical joint  allows for translation along an axis, and rotation about
-  the same axis, it is constructed using 2 intermediate constraints.
+  The rj or Revolute Joint combines a spherical joint (SJ) with a b1 perpendicular
+  constraint to remove 5 DOFs
   """
   sim::Sim      #reference to the simulation data structures
   bodyi::Body   #bodyi
@@ -20,12 +20,12 @@ type cj
   subGCs::Array #consider using inhepitance here for speedup?
 
   #constructor function
-  function cj(sim::Sim,bodyi::Body,bodyj::Body,Pi,Qj,ai_head,bi_head,cj_head,ai_tail = 1,bi_tail = 1,cj_tail = 1)
+  function rj(sim::Sim,bodyi::Body,bodyj::Body,Pi,Qj,ai_head,bi_head,cj_head,ai_tail = 1,bi_tail = 1,cj_tail = 1)
     rDOF = 5;
 
     subGCs = Array(Any,2)
-    subGCs[1] = b1(sim,bodyi,bodyj,ai_head,bi_head,cj_head,ai_tail,bi_tail,cj_tail)
-    subGCs[2] = b2(sim,bodyi,bodyj,Pi,Qj,ai_head,bi_head,ai_tail,bi_tail)
+    subGCs[1] = sj(sim,bodyi,bodyj,Pi,Qj)
+    subGCs[2] = b1(sim,bodyi,bodyj,ai_head,bi_head,cj_head,ai_tail,bi_tail,cj_tail)
 
     new(sim,bodyi,bodyj,Pi,Qj,ai_head,ai_tail,bi_head,bi_tail,cj_head,cj_tail,rDOF,subGCs)
   end

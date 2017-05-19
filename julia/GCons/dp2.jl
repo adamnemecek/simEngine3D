@@ -19,7 +19,6 @@ type dp2
   fddot         #lambda function describing how constraint changes with time
 
 
-
   #constructor function
   function dp2(sim::Sim,bi::Body,bj::Body,Pi::Int,Qj::Int,ai_head::Int, ai_tail = 1, f = t->0 , fdot = t->0, fddot = t->0)
     rDOF = 1; #dp2 removes one DOF

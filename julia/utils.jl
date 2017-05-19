@@ -72,3 +72,8 @@ function insertUL!(A, h , ind)
   x , y = ind[1] , ind[2]
   A[x:x+row-1 ,y:y+col-1] = h
 end
+
+function flatten(arr::Array)
+  """flattens an array of arrays into a array"""
+   = [arr[1,1]  arr[1,2] ; arr[2,1]  arr[2,2]]
+## in the future, upgrade this function to work for systems that are not simply 2x2
