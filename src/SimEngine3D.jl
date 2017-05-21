@@ -25,6 +25,9 @@ include("./GCons/tj.jl")
 include("./GCons/rj.jl")
 include("./GCons/uj.jl")
 
+#normalization constraints
+include("./GCons/p.jl")
+
 #absolute constraints
 include("./GCons/ground.jl")
 #-------------------------kinematics, dynamics, utilities-----------------------
