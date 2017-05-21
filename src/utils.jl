@@ -61,7 +61,7 @@ end
 
 function insertUL!(A, h , ind)
   """
-  insert a smaller matrix h, into a bigger matrix A by overwriting elements of a
+  insert a smaller matrix h, into a bigger matrix A by overwriting elements of A
   with h. The upper left hand corners of both matricies at ind (x,y)
   input:
     A - larger, outer matrix where a part is being overwritten
@@ -80,3 +80,9 @@ function flatten(arr::Array)
   [arr[1,1]  arr[1,2] ; arr[2,1]  arr[2,2]]
   ## in the future, upgrade this function to work for systems that are not simply 2x2
 end
+
+#---------------------setup functions-------------------------------------------
+"""principle rotations are useful when setting up problems"""
+Rx(Θ) = [1 0 0 ; 0 cos(Θ) -sin(Θ) ; 0 sin(Θ) cos(Θ)]
+Ry(Θ) = [ cos(Θ) 0 sin(Θ) ; 0 1 0 ; -sin(Θ) 0 cos(Θ)]
+Rz(Θ) = [ cos(Θ) -sin(Θ) 0 ; sin(Θ) cos(Θ) 0  ; 0 0 1]

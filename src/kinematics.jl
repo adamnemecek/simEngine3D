@@ -1,6 +1,6 @@
 #kinematics - all functions required for kinematics analysis.
 """
-kinematics analysis - generates the time history (q, qdot, qddot) of a
+Kinematics Analysis - generates the time history (q, qdot, qddot) of a
 system between tStart and tStop
 Inputs: tStart, tStop, δt
 output: hist - an array of history terms
@@ -17,7 +17,7 @@ function KinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   tgrid = tStart,δt,tStop # type unit range
 
   #setup history
-  hist = Array{SnapShot}(lenght(tgrid))
+  hist = Array{SnapShot}(length(tgrid))
   histInd = 1;
   #iterate through grid and solve equations
   for instant in tgrid
@@ -40,6 +40,8 @@ function KinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     histInd += 1
   end
 
+  return hist
+end
 
 
 """
@@ -49,7 +51,7 @@ approach. results in solution for q at time t
 function positionAnalysis(sim::Sim , ϵ =1e-9 . , maxIter = 100)
   initial_q = sim.q ; posErr = 1; counter = 1;
   while posErr > ϵ
-    bulidɸ(sim)
+    bulidɸF(sim)
     buildɸF_q(sim)
     Δq = sim.ɸF_q \ -sim.ɸF
     sim.q += Δq
@@ -69,7 +71,7 @@ function velocityAnalysis(sim::Sim)
 end
 
 """
-solve a linear system to determine qddot a ttime t
+solve a linear system to determine qddot at time t
 """
 function accelerationAnalysis(sim::Sim)
   build𝛾F(sim)
