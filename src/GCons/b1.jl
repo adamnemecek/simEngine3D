@@ -61,10 +61,10 @@ function ϕ_r(con::b1)
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
   output: ([2x3],[2x3])
   """
-  phi_r = Array(Float64,2,2)
-  phi_r[1,1], phi_r[1,2] = ϕ_r(con.subGCs[1])
-  phi_r[2,1], phi_r[2,2] = ϕ_r(con.subGCs[2])
-  return phi_r[:,1] , phi_r[:,2]
+  phi_r = Array{Float64}{con.rDOF,6)
+  phi_p[1:1,1:3], phi_p[1:1,4:6] = ϕ_r(con.subGCs[1])
+  phi_p[2:2,1:3], phi_p[2:2,4:6] = ϕ_r(con.subGCs[2])
+  return phi_r[:,1:3] , phi_r[:,4:6]
 end
 
 function ϕ_p(con::b1)
@@ -72,8 +72,8 @@ function ϕ_p(con::b1)
   partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
   output:([2x4],[2x4])
   """
-  phi_p = Array(Float64,con.rDOF,2)
-  phi_p[1,1], phi_p[1,2] = ϕ_p(con.subGCs[1])
-  phi_p[2,1], phi_p[2,2] = ϕ_p(con.subGCs[2])
-  return phi_p[:,1] , phi_p[:,2]
+  phi_p = Array{Float64}{con.rDOF, 8)
+  phi_p[1:1,1:4], phi_p[1:1,5:8] = ϕ_p(con.subGCs[1])
+  phi_p[2:2,1:4], phi_p[2:2,5:8] = ϕ_p(con.subGCs[2])
+  return phi_p[:,1:4] , phi_p[:,5:8]
 end

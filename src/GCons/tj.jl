@@ -37,7 +37,7 @@ end
 function ϕ(con::tj)   #9.26.2016 - slide 24
   """
   constraint equation ϕ
-  output: [4 x 1] evaluation of constraint equation value
+  output: [5 x 1] evaluation of constraint equation value
   """
   phi = [ ϕ(con.subGCs[1]) ; ϕ(con.subGCs[2]) ]
 end
@@ -45,7 +45,7 @@ end
 function ν(con::tj)
   """
   RHS of vel equation
-  output: [4 x 1] evaluation ν
+  output: [5 x 1] evaluation ν
   """
   nu = [ ν(con.subGCs[1]) ; ν(con.subGCs[2]) ]
 end
@@ -53,7 +53,7 @@ end
 function 	𝛾(con::tj)  #10.7.2016 - slide 8
 """
 RHS of accel equation
-output: [4 x 1] evaluation 𝛾
+output: [5 x 1] evaluation 𝛾
 """
 gamma = [ 𝛾(con.subGCs[1]) ; 𝛾(con.subGCs[2])]
 end
@@ -61,23 +61,21 @@ end
 function ϕ_r(con::tj)  #9.28.2016 slide 17
   """
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
-  output: ([4x3],[4x3])
+  output: ([5x3],[5x3])
   """
-  phi_r = Array(Array{Float64},2,2)
-  phi_r[1,1], phi_r[1,2] = ϕ_r(con.subGCs[1])
-  phi_r[2,1], phi_r[2,2] = ϕ_r(con.subGCs[2])
-  phi_r = flatten(phi_r)
-  return phi_r[:,1] , phi_r[:,2]
+  phi_r = Array{Float64}{con.rDOF,6)
+  phi_p[1:4,1:3], phi_p[1:4,4:6] = ϕ_r(con.subGCs[1])
+  phi_p[5:5,1:3], phi_p[5:5,4:6] = ϕ_r(con.subGCs[2])
+  return phi_r[:,1:3] , phi_r[:,4:6]
 end
 
 function ϕ_p(con::tj)  # #9.28.2016 slide 17
   """
   partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
-  output:([4x4],[4x4])
+  output:([5x4],[5x4])
   """
-  phi_p = Array(Array{Float64},2,2)
-  phi_p[1,1], phi_p[1,2] = ϕ_p(con.subGCs[1])
-  phi_p[2,1], phi_p[2,2] = ϕ_p(con.subGCs[2])
-  phi_p = flatten(phi_p)
-  return phi_p[:,1] , phi_p[:,2]
+  phi_p = Array{Float64}{con.rDOF, 8)
+  phi_p[1:4,1:4], phi_p[1:4,5:8] = ϕ_p(con.subGCs[1])
+  phi_p[5:5,1:4], phi_p[5:5,5:8] = ϕ_p(con.subGCs[2])
+  return phi_p[:,1:4] , phi_p[:,5:8]
 end

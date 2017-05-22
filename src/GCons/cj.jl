@@ -20,7 +20,7 @@ type cj
 
   #constructor function
   function cj(sim::Sim,bodyi::Body,bodyj::Body,Pi,Qj,ai_head,bi_head,cj_head,ai_tail = 1,bi_tail = 1,cj_tail = 1)
-    rDOF = 5;
+    rDOF = 4;
 
     subGCs = Array(Any,2)
     subGCs[1] = b1(sim,bodyi,bodyj,ai_head,bi_head,cj_head,ai_tail,bi_tail,cj_tail)
@@ -35,7 +35,7 @@ end
 function ϕ(con::cj)   #9.26.2016 - slide 24
   """
   constraint equation ϕ
-  output: [5 x 1] evaluation of constraint equation value
+  output: [4 x 1] evaluation of constraint equation value
   """
   phi = [ ϕ(con.subGCs[1]) ; ϕ(con.subGCs[2]) ]
 end
@@ -43,7 +43,7 @@ end
 function ν(con::cj)
   """
   RHS of vel equation
-  output: [5 x 1] evaluation ν
+  output: [4 x 1] evaluation ν
   """
   nu = [ ν(con.subGCs[1]) ; ν(con.subGCs[2]) ]
 end
@@ -51,7 +51,7 @@ end
 function 	𝛾(con::cj)  #10.7.2016 - slide 8
 """
 RHS of accel equation
-output: [5 x 1] evaluation 𝛾
+output: [4 x 1] evaluation 𝛾
 """
 gamma = [ 𝛾(con.subGCs[1]) ; 𝛾(con.subGCs[2])]
 end
@@ -59,23 +59,21 @@ end
 function ϕ_r(con::cj)  #9.28.2016 slide 17
   """
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
-  output: ([5x3],[5x3])
+  output: ([4x3],[4x3])
   """
-  phi_r = Array(Array{Float64},2,2)
-  phi_r[1,1], phi_r[1,2] = ϕ_r(con.subGCs[1])
-  phi_r[2,1], phi_r[2,2] = ϕ_r(con.subGCs[2])
-  phi_r = flatten(phi_r)
-  return phi_r[:,1] , phi_r[:,2]
+  phi_r = Array{Float64}{con.rDOF,6)
+  phi_p[1:2,1:3], phi_p[1:2,4:6] = ϕ_r(con.subGCs[1])
+  phi_p[3:4,1:3], phi_p[3:4,4:6] = ϕ_r(con.subGCs[2])
+  return phi_r[:,1:3] , phi_r[:,4:6]
 end
 
 function ϕ_p(con::cj)  # #9.28.2016 slide 17
   """
   partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
-  output:([5x4],[5x4])
+  output:([4x4],[4x4])
   """
-  phi_p = Array(Array{Float64},2,2)
-  phi_p[1,1], phi_p[1,2] = ϕ_p(con.subGCs[1])
-  phi_p[2,1], phi_p[2,2] = ϕ_p(con.subGCs[2])
-  phi_p = flatten(phi_p)
-  return phi_p[:,1] , phi_p[:,2]
+  phi_p = Array{Float64}{con.rDOF, 8)
+  phi_p[1:2,1:4], phi_p[1:2,5:8] = ϕ_p(con.subGCs[1])
+  phi_p[3:4,1:4], phi_p[3:4,5:8] = ϕ_p(con.subGCs[2])
+  return phi_p[:,1:4] , phi_p[:,5:8]
 end
