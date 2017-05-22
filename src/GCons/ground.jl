@@ -17,7 +17,7 @@ end
 
 #----------------begin functions associated with ground----------------------------
 
-function ϕ(con::ground)   #9.26.2016 - slide 20
+function ϕ(con::ground)   #Haug 358
   """
   constraint equation ϕ
   output: [6 x 1] evaluation of constraint equation
@@ -26,7 +26,7 @@ function ϕ(con::ground)   #9.26.2016 - slide 20
   phi = [r(con.bodyi) ; e ]
 end
 
-function ν(con::ground)  #9.26.2016 - slide 21
+function ν(con::ground)  #
   """
   RHS of vel equation
   output: [6 x 1] evaluation ν
@@ -44,19 +44,18 @@ end
 
 function ϕ_r(con::ground)  #Haug 360
   """
-  partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
+  partial derivative of ϕ WRT position position GC's bodyi
   output: ([6x3])
   """
-  [2*eye(3)*G(p(con.bodyi)); zeros(3,3)]
+  [eye(3); zeros(3,3)]
 end
 
 function ϕ_p(con::ground)  #Haug 360
 """
-partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
+partial derivative of ϕ WRT position orientation GC's bodyi
 output:([6x4])
 """
- Pi = p(con.bodyi); e0 = Pi[1] ; e = Pi[2:4,1:1]
- phi_pi = (tilde(e) + e0*eye(3))*G(p(con.bodyi))
- return phi_pi
-
+P_i = p(con.bodyi); e0 = P_i[1] ; e = P_i[2:4,1:1] ; siBar = pt(con.bodyi,con.Pi)
+phi_pi =[-2*A(con.bodyi)*tilde(siBar)'*G(P_i) ; (tilde(e) + e0*eye(3))*G(P_i)]
+return phi_pi
 end

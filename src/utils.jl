@@ -6,15 +6,7 @@ the utilities module provides utility functionality useful throughout
 Simbody3D
 """
 
-# function A2P (A::Array{float64})
-#   #takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters
-#   #e0sqrd = (trace(A) + 1)/4
-#
-#
-#   return P
-# end
-
-function B(Pi::Array{Float64},siBar::Array{Float64}) #9.28.2016 slide 12
+function B(Pi::Array,siBar::Array) #9.28.2016 slide 12
   """
   B matrix = [A(p)sbar]_p is useful in calculating partial derivative of ϕ wrt GC's
   inputs: Pi = euler params [4x1], siBar = point location in LRF [3x1]
@@ -25,26 +17,38 @@ function B(Pi::Array{Float64},siBar::Array{Float64}) #9.28.2016 slide 12
   b = 2*[(e0*eye(3) + tilde(e))*siBar   e*siBar' - (e0*eye(3) + tilde(e))*tilde(siBar) ]
 end
 
-function G(Pi::Array{Float64})
+function G(Pi::Array)
   e0 = Pi[1] ; e = Pi[2:4]
-  G = [-e , tilde(e) , e0*eye(3)]
+  G = [-e -tilde(e) + e0*eye(3)]
 end
 
 
-function P2A(Pi::Array{Float64})   #kinematic key formulas
+function P2A(Pi::Array)   #kinematic key formulas
   """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
   e0 = Pi[1]
   e = Pi[2:4]
-  E = [-e , tilde(e) , e0*eye(3)]
-  G = [-e , tilde(e) , e0*eye(3)]
-  A = EG'
+  E =  [-e  tilde(e) + e0*eye(3)]
+  G =  [-e -tilde(e) + e0*eye(3)]
+  A = E*G'
   return A
 end
 
-function tilde(a::Array{Float64})  #kinematic key formulas
+
+function A2P(A::Array) #9.21 slide 20
+  """takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters"""
+  e0 = sqrt((trace(A) + 1)/4)
+  if e0 != 0
+    e1 = A[3,2] - A[2,3]/(4*e0)
+    e2 = A[1,3] - A[3,1]/(4*e0)
+    e3 = A[2,1] - A[1,2]/(4*e0)
+  end
+  p = [e0 e1 e2 e3]'
+end
+
+function tilde(a::Array)  #kinematic key formulas
   """tilde takes a 3x1 vector and makes it the cross product operator matrix ~ """
-  Atil = [ 0  -a[1]  a[2];
-         a[3]   0   -a[1];
+  Atil = [ 0  -a[3]  a[2];
+         a[3]    0  -a[1];
         -a[2]  a[1]    0  ]
   return Atil
 end
@@ -86,3 +90,10 @@ end
 Rx(Θ) = [1 0 0 ; 0 cos(Θ) -sin(Θ) ; 0 sin(Θ) cos(Θ)]
 Ry(Θ) = [ cos(Θ) 0 sin(Θ) ; 0 1 0 ; -sin(Θ) 0 cos(Θ)]
 Rz(Θ) = [ cos(Θ) -sin(Θ) 0 ; sin(Θ) cos(Θ) 0  ; 0 0 1]
+
+function flattenall(a::AbstractArray)
+    while any(x->typeof(x)<:AbstractArray, a)
+        a = collect(Base.flatten(a))
+    end
+    return a
+end
