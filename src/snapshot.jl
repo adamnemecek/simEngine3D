@@ -5,4 +5,5 @@ type SnapShot
   t::Float64
   function SnapShot(sim::Sim)
     new(sim.q,sim.qdot,sim,qddot,sim.t)
+  end
 end

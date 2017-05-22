@@ -2,7 +2,7 @@
 #SimEngine3D provides a set of simulation tools to construct and analyze
 #he Kinematics and dynammics of 3D spacial systems
 
-#module SimEngine3D
+module SimEngine3D
 
 #system objects
 include("./sim.jl")
@@ -25,8 +25,8 @@ include("./GCons/tj.jl")
 include("./GCons/rj.jl")
 include("./GCons/uj.jl")
 
-#normalization constraints
-include("./GCons/p.jl")
+#euler parameter normalization constraints
+include("./GCons/ep.jl")
 
 #absolute constraints
 include("./GCons/ground.jl")
@@ -39,4 +39,6 @@ include("./utils.jl")
 include("snapshot.jl")
 include("./plot.jl")
 
-#end
+#---------------------------public interface------------------------------------
+
+end

@@ -8,8 +8,8 @@ type dp1
   sim::Sim      #reference to the simulation data structures
   bodyi::Body   #bodyi
   bodyj::Body   #bodyj
-  Pi::Int       #index of point p on body i (tail)
-  Qi::Int       #index of point q on body i (head)
+  Pi::Int       #index of point P on body i (tail)
+  Qi::Int       #index of point Q on body i (head)
   Pj::Int       #index of point P on body j (tail)
   Qj::Int       #index of point Q on body j (head)
   rDOF::Int     #number of degrees of freedom removed by constraint

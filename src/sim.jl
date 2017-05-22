@@ -12,15 +12,15 @@ type Sim
   nc_p::Int    #number of euler parameter normalization constraints == nb
   t::Float64   #current time of the system
 
-  #objects
-  bodies::Any          #[nb x 1] array of body objects in the system
-  cons::Any            #[nCons x 1]array of constraint objects in system
-  pCons::Any           #[nb x 1]   array of euler parameter constraint objects
-
   #state
   q::Array{Float64}          #[7nb x 1]array of system generalized coordinates = [r;p]
   qdot::Array{Float64}       #[7nb x 1]array of system generalized coordinates = [rdot;pdot]
   qddot::Array{Float64}      #[7nb x 1]array of system generalized coordinates = [rdot;pdot]
+
+  #objects
+  bodies::Any          #[nb x 1] array of body objects in the system
+  cons::Any            #[nCons x 1]array of constraint objects in system
+  pCons::Any           #[nb x 1]   array of euler parameter constraint objects
 
   #vel and accel RHS's
   νk::Array{Float64}
@@ -43,24 +43,12 @@ type Sim
 
   function Sim()
     #make a blank simulation
-    q = Array{Float64}
-    qdot = Array{Float64}
-    qddot = Array{Float64}
+    nb = 0; nc = 0 ; nc_k = 0 ; nc_p = 0 ; t= 0.0
+    q = Array{Float64}(0); qdot =  Array{Float64}(0); qddot = Array{Float64}(0)
+    bodies = Array{Any}(0); cons =Array{Any}(0); pCons = Array{Any}(0)
 
-    νk = Array{Float64}
-    νp = Array{Float64}
-    νF = Array{Float64}
-    𝛾k = Array{Float64}
-    𝛾p = Array{Float64}
-    𝛾F = Array{Float64}
+    new(nb,nc,nc_k,nc_p,t, q,qdot,qddot, bodies,cons,pCons)
 
-    ɸk = Array{Float64}
-    ɸp = Array{Float64}
-    ɸF = Array{Float64}
-    ɸk_r = Array{Float64}
-    ɸk_p = Array{Float64}
-    ɸF_q = Array{Float64}
-    new(0,0,0,0,0.0, [],[], q,qdot,qddot, νk,νp,νF,𝛾k,𝛾p,𝛾F, ɸk,ɸp,ɸF,ɸk_r,ɸk_p,ɸF_q )
   end
 
 
@@ -72,7 +60,7 @@ end
 adds a body object to the current simulation. body object should be initialized
 with points.
 """
-function addBody!(sim::Sim, body::Body, r = [0,0,0]', p = [1 0 0 0]')
+function addBody!(sim::Sim, body::Any, r = [0 0 0]', p = [1 0 0 0]')
   push!(sim.bodies, body) #add the body to the simulation
   sim.nb += 1;    #increment body count
   resizeSim!(sim)
@@ -95,16 +83,17 @@ end
 
 """Ground is the first body added to the system, and is index 1"""
 function addGround!(sim::Sim)
-  gnd = Body(1)
-  addBody(sim,gnd)
-  addPoint(sim.bodies[1] , [1,0,0]') #need a point to form rotational constraints
+  gnd = Body(sim,1)
+  addBody!(sim,gnd)
+  addPoint(sim.bodies[1] , [1 0 0]') #need a point to form rotational constraints
   con = ground(sim,gnd,2)
   addConstraint!(sim,con)
+end
 
   """add euler parameter constraints to system"""
   function addEulerParamConstraints(sim::Sim)
     for body in sim.bodies
-      push!(sim.pCons,p(sim,body))
+      push!(sim.pCons,ep(sim,body))
       sim.nc += 1; sim.nc_p += 1
     end
 
@@ -139,17 +128,18 @@ end
 """velocity equations for the kinematic and driving constraints"""
 function buildνk(sim::Sim)
   row = 1;
-  for con in sim.cons:
+  for con in sim.cons
     sim.νk[row:row+con.rDOF - 1] = ν(con)
     row = row + con.rDOF - 1
-
+  end
 end
 """velocity equations for the euler parameters"""
 function buildνp(sim::Sim)
   row = 1;
-  for pCon in sim.pCons:
+  for pCon in sim.pCons
     sim.νp[row:row+con.rDOF - 1] = ν(con)
     row = row + con.rDOF - 1
+  end
 end
 """combined velocity equations"""
 function buildνF(sim::Sim)
@@ -161,17 +151,18 @@ end
 """acceleration equations for the kinematic and driving constraints"""
 function build𝛾k(sim::Sim)
   row = 1;
-  for con in sim.cons:
+  for con in sim.cons
     sim.𝛾k[row:row+con.rDOF - 1] = 𝛾(con)
     row = row + con.rDOF - 1
-
+  end
 end
 """acceleration equations for the euler parameters"""
 function build𝛾p(sim::Sim)
   row = 1;
-  for pCon in sim.pCons:
+  for pCon in sim.pCons
     sim.𝛾p[row:row+con.rDOF - 1] = 𝛾(con)
     row = row + con.rDOF - 1
+  end
 end
 """combined velocity equations"""
 function build𝛾F(sim::Sim)
@@ -184,7 +175,7 @@ end
 """position equations for the kinematic and driving constraints"""
 function buildɸk(sim::Sim) #[nc_k x 1]
   row = 1;
-  for con in sim.cons:
+  for con in sim.cons
     sim.ɸk[row:row+con.rDOF - 1] = ϕ(con)
     row = row + con.rDOF - 1
   end
@@ -192,7 +183,7 @@ end
 """euler position constraint equations"""
 function buildɸp(sim::Sim)
   row = 1;
-  for pCon in sim.pCons:
+  for pCon in sim.pCons
     sim.ɸp[row:row+con.rDOF - 1] = ϕ(con)
     row = row + con.rDOF - 1
   end

@@ -39,7 +39,7 @@ function ϕ(con::tj)   #9.26.2016 - slide 24
   constraint equation ϕ
   output: [4 x 1] evaluation of constraint equation value
   """
-  phi = [ ϕ(subGCs[1]) ; ϕ(subGCs[2]) ]
+  phi = [ ϕ(con.subGCs[1]) ; ϕ(con.subGCs[2]) ]
 end
 
 function ν(con::tj)
@@ -47,7 +47,7 @@ function ν(con::tj)
   RHS of vel equation
   output: [4 x 1] evaluation ν
   """
-  nu = [ ν(subGCs[1]) ; ν(subGCs[2]) ]
+  nu = [ ν(con.subGCs[1]) ; ν(con.subGCs[2]) ]
 end
 
 function 	𝛾(con::tj)  #10.7.2016 - slide 8
@@ -55,7 +55,7 @@ function 	𝛾(con::tj)  #10.7.2016 - slide 8
 RHS of accel equation
 output: [4 x 1] evaluation 𝛾
 """
-gamma = [ 𝛾(subGCs[1]) ; 𝛾(subGCs[2])]
+gamma = [ 𝛾(con.subGCs[1]) ; 𝛾(con.subGCs[2])]
 end
 
 function ϕ_r(con::tj)  #9.28.2016 slide 17
@@ -64,8 +64,8 @@ function ϕ_r(con::tj)  #9.28.2016 slide 17
   output: ([4x3],[4x3])
   """
   phi_r = Array(Array{Float64},2,2)
-  phi_r[1,1], phi_r[1,2] = ϕ_r(subGCs[1])
-  phi_r[2,1], phi_r[2,2] = ϕ_r(subGCs[2])
+  phi_r[1,1], phi_r[1,2] = ϕ_r(con.subGCs[1])
+  phi_r[2,1], phi_r[2,2] = ϕ_r(con.subGCs[2])
   phi_r = flatten(phi_r)
   return phi_r[:,1] , phi_r[:,2]
 end
@@ -76,8 +76,8 @@ function ϕ_p(con::tj)  # #9.28.2016 slide 17
   output:([4x4],[4x4])
   """
   phi_p = Array(Array{Float64},2,2)
-  phi_p[1,1], phi_p[1,2] = ϕ_p(subGCs[1])
-  phi_p[2,1], phi_p[2,2] = ϕ_p(subGCs[2])
+  phi_p[1,1], phi_p[1,2] = ϕ_p(con.subGCs[1])
+  phi_p[2,1], phi_p[2,2] = ϕ_p(con.subGCs[2])
   phi_p = flatten(phi_p)
   return phi_p[:,1] , phi_p[:,2]
 end

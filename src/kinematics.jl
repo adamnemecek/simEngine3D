@@ -5,11 +5,11 @@ system between tStart and tStop
 Inputs: tStart, tStop, δt
 output: hist - an array of history terms
 """
-function KinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
-  if nDOF(sys) > 0
+function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
+  if nDOF(sim) > 0
     error("system is underconstrainted, and therefore kinematic analysis cannot continue")
   end
-  if Rank(sys.ɸF_q) < nDOF(sys)
+  if rank(sim.ɸF_q) < nDOF(sim)
     error("simulation is starting in a singular configuration ")
   end
 
@@ -48,7 +48,7 @@ end
 solve the non-linear equations of constraint using an iterative newton-rapson
 approach. results in solution for q at time t
 """
-function positionAnalysis(sim::Sim , ϵ =1e-9 . , maxIter = 100)
+function positionAnalysis(sim::Sim , ϵ =1e-9 , maxIter = 100)
   initial_q = sim.q ; posErr = 1; counter = 1;
   while posErr > ϵ
     bulidɸF(sim)
@@ -56,7 +56,7 @@ function positionAnalysis(sim::Sim , ϵ =1e-9 . , maxIter = 100)
     Δq = sim.ɸF_q \ -sim.ɸF
     sim.q += Δq
     if counter > maxIter
-      error('failure to converge')
+      error("failure to converge")
     end
   end
 end

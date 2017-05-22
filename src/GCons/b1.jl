@@ -1,5 +1,4 @@
 #GCons are Geometic Constraints
-
 type b1
   """
   The b1 constraint specifies that a vector cj is perpendicular to a plane
@@ -38,7 +37,7 @@ function ϕ(con::b1)   #9.26.2016 - slide 23
   constraint equation ϕ
   output: [2 x 1] evaluation of constraint equation value
   """
-  phi = [ ϕ(subGCs[1]) ; ϕ(subGCs[2])]
+  phi = [ ϕ(con.subGCs[1]) ; ϕ(con.subGCs[2])]
 end
 
 function ν(con::b1)
@@ -46,7 +45,7 @@ function ν(con::b1)
   RHS of vel equation
   output: [2 x 1] evaluation ν
   """
-  nu = [ ν(subGCs[1]) ; ν(subGCs[2])]
+  nu = [ ν(con.subGCs[1]) ; ν(con.subGCs[2])]
 end
 
 function 	𝛾(con::b1)
@@ -54,7 +53,7 @@ function 	𝛾(con::b1)
   RHS of accel equation
   output: [2 x 1] evaluation ν
   """
-  gamma = [ 𝛾(subGCs[1]) ; 𝛾(subGCs[2])]
+  gamma = [ 𝛾(con.subGCs[1]) ; 𝛾(con.subGCs[2])]
 end
 
 function ϕ_r(con::b1)
@@ -63,8 +62,8 @@ function ϕ_r(con::b1)
   output: ([2x3],[2x3])
   """
   phi_r = Array(Float64,2,2)
-  phi_r[1,1], phi_r[1,2] = ϕ_r(subGCs[1])
-  phi_r[2,1], phi_r[2,2] = ϕ_r(subGCs[2])
+  phi_r[1,1], phi_r[1,2] = ϕ_r(con.subGCs[1])
+  phi_r[2,1], phi_r[2,2] = ϕ_r(con.subGCs[2])
   return phi_r[:,1] , phi_r[:,2]
 end
 
@@ -74,7 +73,7 @@ function ϕ_p(con::b1)
   output:([2x4],[2x4])
   """
   phi_p = Array(Float64,con.rDOF,2)
-  phi_p[1,1], phi_p[1,2] = ϕ_p(subGCs[1])
-  phi_p[2,1], phi_p[2,2] = ϕ_p(subGCs[2])
+  phi_p[1,1], phi_p[1,2] = ϕ_p(con.subGCs[1])
+  phi_p[2,1], phi_p[2,2] = ϕ_p(con.subGCs[2])
   return phi_p[:,1] , phi_p[:,2]
 end

@@ -1,6 +1,5 @@
 #GCons are Geometic Constraints
-
-type p
+type ep
   """
   The p constraint is the euler normalization constraint, which specifies that
   p'p = 1
@@ -11,7 +10,7 @@ type p
 
 
   #constructor function
-  function p(sim::Sim,bodyi::Body)
+  function ep(sim::Sim,bodyi::Body)
     rDOF = 1;
     new(sim,bodyi,rDOF)
   end
@@ -19,7 +18,7 @@ end
 
 #----------------begin functions associated with b1----------------------------
 
-function ϕ(con::p)   #9.26.2016 - slide 23
+function ϕ(con::ep)   #9.26.2016 - slide 23
   """
   constraint equation ϕ
   output: [1 x 1] evaluation of constraint equation value
@@ -27,7 +26,7 @@ function ϕ(con::p)   #9.26.2016 - slide 23
   phi = .5*p(con.bodyi)'*p(con.bodyi) - .5
 end
 
-function ν(con::p)
+function ν(con::ep)
   """
   RHS of vel equation
   output: [1 x 1] evaluation ν
@@ -35,7 +34,7 @@ function ν(con::p)
   nu = 0
 end
 
-function 	𝛾(con::p)
+function 	𝛾(con::ep)
   """
   RHS of accel equation
   output: [1 x 1] evaluation ν
@@ -43,7 +42,7 @@ function 	𝛾(con::p)
   gamma = -2*pdot(con.bodyi)'*pdot(con.bodyi)
 end
 
-function ϕ_r(con::p)
+function ϕ_r(con::ep)
   """
   partial derivative of ϕ WRT position position GC's of bodyi
   output: ([1x3])
@@ -51,7 +50,7 @@ function ϕ_r(con::p)
   return zeros(1,3)
 end
 
-function ϕ_p(con::p)
+function ϕ_p(con::ep)
   """
   partial derivative of ϕ WRT position orientation GC's of bodyi
   output:([1x4])
