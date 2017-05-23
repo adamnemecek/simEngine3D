@@ -47,7 +47,8 @@ function ϕ_r(con::ground)  #Haug 360
   partial derivative of ϕ WRT position position GC's bodyi
   output: ([6x3])
   """
-  [eye(3); zeros(3,3)]
+  phi_ri = [eye(3); zeros(3,3)]
+  return phi_ri , 0
 end
 
 function ϕ_p(con::ground)  #Haug 360
@@ -57,5 +58,5 @@ output:([6x4])
 """
 P_i = p(con.bodyi); e0 = P_i[1] ; e = P_i[2:4,1:1] ; siBar = pt(con.bodyi,con.Pi)
 phi_pi =[-2*A(con.bodyi)*tilde(siBar)'*G(P_i) ; (tilde(e) + e0*eye(3))*G(P_i)]
-return phi_pi
+return phi_pi , 0
 end

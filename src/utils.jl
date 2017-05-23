@@ -53,14 +53,15 @@ function tilde(a::Array)  #kinematic key formulas
   return Atil
 end
 
-function dij(bi::Body,bj::Body,Si::Array,Sj::Array) #9.26.2017 slide 14
+function dij(bi::Body,bj::Body,PiBar::Array,QjBar::Array) #9.26.2017 slide 14
   """determines the distance in the GRF between point Pi and Qj"""
-  return r(bj) + A(bj)*pt(bj,Sj) -(r(bi) + A(bi)*pt(bi,Si) )
+  return r(bj) + A(bj)*QjBar -(r(bi) + A(bi)*PiBar )
+
 end
 
-function dijdot(bi::Body,bj::Body,Si::Array,Sj::Array) #10.7.2017 slide 7
+function dijdot(bi::Body,bj::Body,PiBar::Array,QjBar::Array) #10.7.2017 slide 7
   """time derivative of dij"""
-  return rdot(bj)+ B(p(bj),Sj)*pdot(bj) -rdot(bi) - B(p(bi),Si)*pdot(bi)
+  return rdot(bj)+ B(p(bj),QjBar)*pdot(bj) -rdot(bi) - B(p(bi),PiBar)*pdot(bi)
 end
 
 function insertUL!(A, h , ind)

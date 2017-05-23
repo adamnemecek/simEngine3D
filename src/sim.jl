@@ -129,8 +129,8 @@ end
 function buildνp(sim::Sim)
   row = 1;
   for pCon in sim.pCons
-    sim.νp[row:row+con.rDOF - 1] = ν(con)
-    row = row + con.rDOF - 1
+    sim.νp[row:row+pCon.rDOF - 1] = ν(pCon)
+    row = row + pCon.rDOF - 1
   end
 end
 """combined velocity equations"""
@@ -194,7 +194,7 @@ function buildɸk_r(sim::Sim)
     phi_r = ϕ_r(con)  #(phi_ri ,phi_rj) if rj exists
     col = 3*(con.bodyi.ID - 1) + 1
     insertUL!(sim.ɸk_r, phi_r[1],(row,col))  #inset phi_ri
-    if length(phi_r) == 2 #phi_rj exists
+    if phi_r[2] != 0 #phi_rj exists!
       col = 3*(con.bodyj.ID - 1) + 1
       insertUL!(sim.ɸk_r, phi_r[2],(row,col))  #inset phi_ri
     end
@@ -209,7 +209,7 @@ function buildɸk_p(sim::Sim)
     phi_p = ϕ_p(con)  #(phi_ri ,phi_rj) if rj exists
     col = 4*(con.bodyi.ID-1) + 1
     insertUL!(sim.ɸk_p, phi_p[1],(row,col))  #inset phi_ri
-    if length(phi_p) == 2 #phi_rj exists
+    if phi_p[2] != 0 #phi_rj exists!
       col = 4*(con.bodyj.ID-1) + 1
       insertUL!(sim.ɸk_p, phi_p[2],(row,col))  #inset phi_ri
     end
@@ -227,9 +227,9 @@ function buildɸF_q(sim::Sim)
   row = 1
   for pCon in sim.pCons
     #insert ϕ_p  components (no need to insert ϕ_r as it's zero)
-    phi_p = ϕ_p(con)
-    col = 3*sim.nb + 4*(con.bodyi.ID-1) + 1
-    insertUL!(ɸp_q ,phi_p ,(row,col))  #inset phi_ri
+    phi_p = ϕ_p(pCon)
+    col = 3*sim.nb + 4*(pCon.bodyi.ID-1) + 1
+    insertUL!(ɸp_q ,phi_p[1] ,(row,col))  #inset phi_ri
     row += pCon.rDOF
   end
 

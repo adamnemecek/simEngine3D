@@ -47,7 +47,7 @@ function ϕ_r(con::ep)
   partial derivative of ϕ WRT position position GC's of bodyi
   output: ([1x3])
   """
-  return zeros(1,3)
+  return zeros(1,3) , 0
 end
 
 function ϕ_p(con::ep)
@@ -55,6 +55,6 @@ function ϕ_p(con::ep)
   partial derivative of ϕ WRT position orientation GC's of bodyi
   output:([1x4])
   """
-  return phi_p = 2*p(con.bodyi)'
+  return phi_p = 2*p(con.bodyi)' , 0
 
 end
