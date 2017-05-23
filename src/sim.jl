@@ -41,10 +41,10 @@ type Sim
   #dynamics
 
 
-  function Sim()
+  function Sim(nbodies = 2)  #total number of bodies to be added to the system , apriori
     #make a blank simulation
-    nb = 0; nc = 0 ; nc_k = 0 ; nc_p = 0 ; t= 0.0
-    q = Array{Float64}(0); qdot =  Array{Float64}(0); qddot = Array{Float64}(0)
+    nb = nbodies; nc = 0 ; nc_k = 0 ; nc_p = 0 ; t= 0.0
+    q = zeros(7*nb,1); qdot = zeros(7*nb,1); qddot = zeros(7*nb,1)
     bodies = Array{Any}(0); cons =Array{Any}(0); pCons = Array{Any}(0)
 
     new(nb,nc,nc_k,nc_p,t, q,qdot,qddot, bodies,cons,pCons)
@@ -62,16 +62,8 @@ with points.
 """
 function addBody!(sim::Sim, body::Any, r = [0 0 0]', p = [1 0 0 0]')
   push!(sim.bodies, body) #add the body to the simulation
-  sim.nb += 1;    #increment body count
-  resizeSim!(sim)
   set_r!(body,r)  #update body GC's
   set_p!(body,p)
-end
-
-function resizeSim!(sim::Sim)
-  sim.q     = [sim.q ; zeros(7,1) ]
-  sim.qdot  = [sim.qdot ; zeros(7,1) ]
-  sim.qddot = [sim.qddot ; zeros(7,1) ]
 end
 
 """add a constraint object to the current simulation"""
@@ -85,7 +77,7 @@ end
 function addGround!(sim::Sim)
   gnd = Body(sim,1)
   addBody!(sim,gnd)
-  addPoint(sim.bodies[1] , [1 0 0]') #need a point to form rotational constraints
+  addPoint(gnd , [1 0 0]') #need a point to form rotational constraints
   con = ground(sim,gnd,2)
   addConstraint!(sim,con)
 end

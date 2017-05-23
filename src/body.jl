@@ -79,5 +79,5 @@ end
 
  function A(bd::Body)
    """returns rotation matrix of the body, calculated from p"""
-    return Utils.P2A(p(bd))
+    return P2A(p(bd))
   end

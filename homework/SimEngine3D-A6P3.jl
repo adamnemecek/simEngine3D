@@ -9,7 +9,7 @@ include("../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
 
 #define the simulation
-sim = SE3D.Sim()
+sim = SE3D.Sim(2)
 
 #add the ground body in the simulation as body 1
 SE3D.addGround!(sim)
@@ -36,14 +36,14 @@ bi_head = [0 1 0]'
 cj_head = [0 0 1]'  #vector defining the axis of rotation in the LRF of bodyj
 bodyj_x = [1 0 0]'
 #SE3D.addPoint(sim.bodies[1] , Pi)
-SE3D.addPoint(sim.bodies[1] , ai_head) #index 2
-SE3D.addPoint(sim.bodies[1] , bi_head) #index 3
+SE3D.addPoint(sim.bodies[1] , ai_head) #index 3
+SE3D.addPoint(sim.bodies[1] , bi_head) #index 4
 SE3D.addPoint(sim.bodies[2] , Qj)      #index 2
 SE3D.addPoint(sim.bodies[2] , cj_head) #index 3
 SE3D.addPoint(sim.bodies[2] , bodyj_x) #index 4
 
 #hardcode the indecies
-PiID = 1; QjID = 2; ai_headID = 2; bi_headID = 3; cj_headID = 3
+PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3
 #add kinematic constraints
 rev = SE3D.rj(sim,sim.bodies[1],sim.bodies[2],PiID,QjID,ai_headID,bi_headID,cj_headID)
 SE3D.addConstraint!(sim,rev)
@@ -52,7 +52,7 @@ SE3D.addConstraint!(sim,rev)
 f(t) = cos((pi*cos(2*t))/4 - pi/2)
 fdot(t) = ((pi*sin(2*t)*sin((pi*cos(2*t))/4 - pi/2))/2)
 fddot(t) =(pi*cos(2*t)*sin((pi*cos(2*t))/4 - pi/2) - (pi^2*sin(2*t)^2*cos((pi*cos(2*t))/4 - pi/2))/4)
-drive = SE3D.dp1(sim,sim.bodies[1],sim.bodies[2],3,4,1,1,f,fdot,fddot )
+drive = SE3D.dp1(sim,sim.bodies[1],sim.bodies[2],4,4,1,1,f,fdot,fddot )
 SE3D.addConstraint!(sim,drive)
 
 #initialize simulation
