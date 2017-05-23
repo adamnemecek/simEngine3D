@@ -61,7 +61,7 @@ function ϕ_r(con::cj)  #9.28.2016 slide 17
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
   output: ([4x3],[4x3])
   """
-  phi_r = Array{Float64}{con.rDOF,6)
+  phi_r = Array{Float64}(con.rDOF,6)
   phi_p[1:2,1:3], phi_p[1:2,4:6] = ϕ_r(con.subGCs[1])
   phi_p[3:4,1:3], phi_p[3:4,4:6] = ϕ_r(con.subGCs[2])
   return phi_r[:,1:3] , phi_r[:,4:6]
@@ -72,7 +72,7 @@ function ϕ_p(con::cj)  # #9.28.2016 slide 17
   partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
   output:([4x4],[4x4])
   """
-  phi_p = Array{Float64}{con.rDOF, 8)
+  phi_p = Array{Float64}(con.rDOF, 8)
   phi_p[1:2,1:4], phi_p[1:2,5:8] = ϕ_p(con.subGCs[1])
   phi_p[3:4,1:4], phi_p[3:4,5:8] = ϕ_p(con.subGCs[2])
   return phi_p[:,1:4] , phi_p[:,5:8]

@@ -18,9 +18,9 @@ type sj
     rDOF = 3;
 
     subGCs = Array(Any,3)
-    subGCs[1] = cd(sim,bodyi,bodyj,Pi,Qj,[1 0 0])
-    subGCs[2] = cd(sim,bodyi,bodyj,Pi,Qj,[0 1 0])
-    subGCs[3] = cd(sim,bodyi,bodyj,Pi,Qj,[0 0 1])
+    subGCs[1] = cd(sim,bodyi,bodyj,Pi,Qj,[1 0 0]')
+    subGCs[2] = cd(sim,bodyi,bodyj,Pi,Qj,[0 1 0]')
+    subGCs[3] = cd(sim,bodyi,bodyj,Pi,Qj,[0 0 1]')
 
     new(sim,bodyi,bodyj,Pi,Qj, rDOF,subGCs)
   end
@@ -57,10 +57,10 @@ function ϕ_r(con::sj)  #9.28.2016 slide 17
   partial derivative of ϕ WRT position position GC's of both bodyi and bodyj
   output: ([3x3],[3x3])
   """
-  phi_r = Array{Float64}{con.rDOF,6)
-  phi_p[1:1,1:3], phi_p[1:1,4:6] = ϕ_r(con.subGCs[1])
-  phi_p[2:2,1:3], phi_p[2:2,4:6] = ϕ_r(con.subGCs[2])
-  phi_p[3:3,1:3], phi_p[3:3,4:6] = ϕ_r(con.subGCs[2])
+  phi_r = Array{Float64}(con.rDOF,6)
+  phi_r[1:1,1:3], phi_r[1:1,4:6] = ϕ_r(con.subGCs[1])
+  phi_r[2:2,1:3], phi_r[2:2,4:6] = ϕ_r(con.subGCs[2])
+  phi_r[3:3,1:3], phi_r[3:3,4:6] = ϕ_r(con.subGCs[2])
   return phi_r[:,1:3] , phi_r[:,4:6]
 end
 
@@ -69,7 +69,7 @@ function ϕ_p(con::sj)  # #9.28.2016 slide 17
   partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
   output:([3x4],[3x4])
   """
-  phi_p = Array{Float64}{con.rDOF, 8)
+  phi_p = Array{Float64}(con.rDOF, 8)
   phi_p[1:1,1:4], phi_p[1:1,5:8] = ϕ_p(con.subGCs[1])
   phi_p[2:2,1:4], phi_p[2:2,5:8] = ϕ_p(con.subGCs[2])
   phi_p[3:3,1:4], phi_p[3:3,5:8] = ϕ_p(con.subGCs[2])
