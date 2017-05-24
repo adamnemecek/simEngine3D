@@ -122,7 +122,7 @@ function buildνk(sim::Sim)
   row = 1;
   for con in sim.cons
     sim.νk[row:row+con.rDOF - 1] = ν(con)
-    row = row + con.rDOF - 1
+    row = row + con.rDOF
   end
 end
 """velocity equations for the euler parameters"""
@@ -130,7 +130,7 @@ function buildνp(sim::Sim)
   row = 1;
   for pCon in sim.pCons
     sim.νp[row:row+pCon.rDOF - 1] = ν(pCon)
-    row = row + pCon.rDOF - 1
+    row = row + pCon.rDOF
   end
 end
 """combined velocity equations"""
@@ -145,15 +145,15 @@ function build𝛾k(sim::Sim)
   row = 1;
   for con in sim.cons
     sim.𝛾k[row:row+con.rDOF - 1] = 𝛾(con)
-    row = row + con.rDOF - 1
+    row = row + con.rDOF
   end
 end
 """acceleration equations for the euler parameters"""
 function build𝛾p(sim::Sim)
   row = 1;
   for pCon in sim.pCons
-    sim.𝛾p[row:row+con.rDOF - 1] = 𝛾(con)
-    row = row + con.rDOF - 1
+    sim.𝛾p[row:row+pCon.rDOF - 1] = 𝛾(pCon)
+    row = row + pCon.rDOF
   end
 end
 """combined velocity equations"""
@@ -169,15 +169,15 @@ function buildɸk(sim::Sim) #[nc_k x 1]
   row = 1;
   for con in sim.cons
     sim.ɸk[row:row+con.rDOF - 1] = ϕ(con)
-    row = row + con.rDOF - 1
+    row = row + con.rDOF
   end
 end
 """euler position constraint equations"""
 function buildɸp(sim::Sim)
   row = 1;
   for pCon in sim.pCons
-    sim.ɸp[row:row+con.rDOF - 1] = ϕ(con)
-    row = row + con.rDOF - 1
+    sim.ɸp[row:row+pCon.rDOF - 1] = ϕ(pCon)
+    row = row + pCon.rDOF
   end
 end
 """combined position equations"""

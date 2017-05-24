@@ -33,7 +33,7 @@ function ϕ(con::sj)   #9.26.2016 - slide 24
   constraint equation ϕ
   output: [3 x 1] evaluation of constraint equation value
   """
-  phi = [ ϕ(subGCs[1]) ; ϕ(con.subGCs[2]) ; ϕ(con.subGCs[3])]
+  phi = [ ϕ(con.subGCs[1]) ; ϕ(con.subGCs[2]) ; ϕ(con.subGCs[3])]
 end
 
 function ν(con::sj)

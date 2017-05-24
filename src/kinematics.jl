@@ -9,12 +9,13 @@ function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   if nDOF(sim) > 0
     error("system is underconstrainted, and therefore kinematic analysis cannot continue")
   end
-  if rank(sim.ɸF_q) < nDOF(sim)
+  buildɸF_q(sim)
+  if rank(sim.ɸF_q) < sim.nc
     error("simulation is starting in a singular configuration ")
   end
 
   #tgrid
-  tgrid = tStart,δt,tStop # type unit range
+  tgrid = tStart:δt:tStop # type unit range
 
   #setup history
   hist = Array{SnapShot}(length(tgrid))
@@ -36,25 +37,26 @@ function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     accelerationAnalysis(sim)
 
     #store simulation history
-    hist[histInd] = Snapshot(sim)
+    hist[histInd] = SnapShot(sim)
     histInd += 1
   end
 
   return hist
 end
 
-
 """
 solve the non-linear equations of constraint using an iterative newton-rapson
 approach. results in solution for q at time t
 """
-function positionAnalysis(sim::Sim , ϵ =1e-9 , maxIter = 100)
-  initial_q = sim.q ; posErr = 1; counter = 1;
-  while posErr > ϵ
-    bulidɸF(sim)
+function positionAnalysis(sim::Sim , ϵ = 1e-9 , maxIter = 100)
+  initial_q = sim.q ; ΔqNorm = 1; counter = 1
+  while  ΔqNorm  > ϵ
+    buildɸF(sim)
     buildɸF_q(sim)
     Δq = sim.ɸF_q \ -sim.ɸF
     sim.q += Δq
+     ΔqNorm = norm(Δq)
+    counter += 1
     if counter > maxIter
       error("failure to converge")
     end
@@ -75,5 +77,5 @@ solve a linear system to determine qddot at time t
 """
 function accelerationAnalysis(sim::Sim)
   build𝛾F(sim)
-  sim.qdot = sim.ɸF_q \ sim.𝛾F
+  sim.qddot = sim.ɸF_q \ sim.𝛾F
 end

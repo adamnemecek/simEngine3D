@@ -59,7 +59,7 @@ aidot =B(p(con.bodyi) ,aiBar)*pdot(con.bodyi)
 ajdot =B(p(con.bodyj) ,ajBar)*pdot(con.bodyj)
 pdoti = pdot(con.bodyi) ; pdotj = pdot(con.bodyj)
 
-gamma = -ai'B(pdotj,ajBar)*pdotj - aj'B(pdoti,aiBar)*pdoti - 2*aidot'ajdot + fddot(con.sim.t)
+gamma = -ai'B(pdotj,ajBar)*pdotj - aj'B(pdoti,aiBar)*pdoti - 2*aidot'ajdot + con.fddot(con.sim.t)
 end
 
 function ϕ_r(con::dp1)  #9.28.2016 slide 13

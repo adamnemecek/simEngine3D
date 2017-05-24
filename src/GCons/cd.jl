@@ -26,7 +26,7 @@ end
 
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
-PiQj(con::cd)  = dij(con.bodyi,cons.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
+PiQj(con::cd)  = dij(con.bodyi,con.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
 
 function ϕ(con::cd)   #9.26.2016 - slide 20
   """
@@ -52,7 +52,7 @@ output: [1 x 1] evaluation 𝛾
 SiBar = pt(con.bodyi,con.Pi) ; SjBar = pt(con.bodyj,con.Qj)
 pdoti = pdot(con.bodyi) ; pdotj = pdot(con.bodyj)
 
-gamma = con.c'*B(pdoti,siBar)*pdoti - con.c'*B(pdotj,sjBar)*pdotj + con.fddot(con.sim.t)
+gamma = con.c'*B(pdoti,SiBar)*pdoti - con.c'*B(pdotj,SjBar)*pdotj + con.fddot(con.sim.t)
 end
 
 function ϕ_r(con::cd)  #9.28.2016 slide 17

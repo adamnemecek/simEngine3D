@@ -36,7 +36,7 @@ include("./dynamics.jl")
 include("./utils.jl")
 
 #-------------------------plotting and exporting--------------------------------
-include("snapshot.jl")
+include("./snapshot.jl")
 include("./plot.jl")
 
 #---------------------------public interface------------------------------------
