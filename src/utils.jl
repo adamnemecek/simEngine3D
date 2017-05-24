@@ -38,9 +38,9 @@ function A2P(A::Array) #9.21 slide 20
   """takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters"""
   e0 = sqrt((trace(A) + 1)/4)
   if e0 != 0
-    e1 = A[3,2] - A[2,3]/(4*e0)
-    e2 = A[1,3] - A[3,1]/(4*e0)
-    e3 = A[2,1] - A[1,2]/(4*e0)
+    e1 = (A[3,2] - A[2,3])/(4*e0)
+    e2 = (A[1,3] - A[3,1])/(4*e0)
+    e3 = (A[2,1] - A[1,2])/(4*e0)
   end
   p = [e0 e1 e2 e3]'
 end
@@ -80,21 +80,9 @@ function insertUL!(A, h , ind)
   A[x:x+row-1 ,y:y+col-1] = h
 end
 
-function flatten(arr::Array)
-  """flattens an array of arrays into a array"""
-  [arr[1,1]  arr[1,2] ; arr[2,1]  arr[2,2]]
-  ## in the future, upgrade this function to work for systems that are not simply 2x2
-end
 
 #---------------------setup functions-------------------------------------------
 """principle rotations are useful when setting up problems"""
 Rx(Θ) = [1 0 0 ; 0 cos(Θ) -sin(Θ) ; 0 sin(Θ) cos(Θ)]
 Ry(Θ) = [ cos(Θ) 0 sin(Θ) ; 0 1 0 ; -sin(Θ) 0 cos(Θ)]
 Rz(Θ) = [ cos(Θ) -sin(Θ) 0 ; sin(Θ) cos(Θ) 0  ; 0 0 1]
-
-function flattenall(a::AbstractArray)
-    while any(x->typeof(x)<:AbstractArray, a)
-        a = collect(Base.flatten(a))
-    end
-    return a
-end

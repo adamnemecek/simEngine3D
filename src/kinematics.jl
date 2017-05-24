@@ -18,8 +18,8 @@ function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   tgrid = tStart:δt:tStop # type unit range
 
   #setup history
-  hist = Array{SnapShot}(length(tgrid))
-  histInd = 1;
+  hist = History(sim,tgrid)
+  tInd = 1;
   #iterate through grid and solve equations
   for instant in tgrid
     #update time
@@ -36,9 +36,9 @@ function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     #acceleration analysis
     accelerationAnalysis(sim)
 
-    #store simulation history
-    hist[histInd] = SnapShot(sim)
-    histInd += 1
+    #store simulation state snapshot
+    snapShot(sim,hist,tInd)
+    tInd += 1
   end
 
   return hist
