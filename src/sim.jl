@@ -6,39 +6,47 @@ spacial kinematics and dynamics on a time grid.
 """
 type Sim
   #counters
-  nb::Int      #number of bodies in the system
-  nc::Int      #number of constraint equations in the system
-  nc_k::Int    #number of kinematic and driving contraints in the system
-  nc_p::Int    #number of euler parameter normalization constraints == nb
-  t::Float64   #current time of the system
+  nb::Int                   #number of bodies in the system
+  nc::Int                   #number of constraint equations in the system
+  nc_k::Int                 #number of kinematic and driving contraints in the system
+  nc_p::Int                 #number of euler parameter normalization constraints == nb
+  t::Float64                #current time of the system
 
   #state
-  q::Array{Float64}          #[7nb x 1]array of system generalized coordinates = [r;p]
-  qdot::Array{Float64}       #[7nb x 1]array of system generalized coordinates = [rdot;pdot]
-  qddot::Array{Float64}      #[7nb x 1]array of system generalized coordinates = [rdot;pdot]
+  q::Array{Float64}         #[7nb x 1] array of system generalized coordinates = [r;p]
+  qdot::Array{Float64}      #[7nb x 1] array of system generalized coordinates = [rdot;pdot]
+  qddot::Array{Float64}     #[7nb x 1] array of system generalized coordinates = [rdot;pdot]
 
   #objects
-  bodies::Any          #[nb x 1] array of body objects in the system
-  cons::Any            #[nCons x 1]array of constraint objects in system
-  pCons::Any           #[nb x 1]   array of euler parameter constraint objects
+  bodies::Any               #[nb    x 1] array of body objects in the system
+  cons::Any                 #[nCons x 1] array of constraint objects in system
+  pCons::Any                #[nb    x 1] array of euler parameter constraint objects
 
-  #vel and accel RHS's
-  νk::Array{Float64}
-  νp::Array{Float64}
-  νF::Array{Float64}
-  𝛾k::Array{Float64}
-  𝛾p::Array{Float64}
-  𝛾F::Array{Float64}
+  #constraint equations
+  ɸk::Array{Float64}        #[nc_k x 1]  array of system non-linear equations of constraint
+  ɸp::Array{Float64}        #[nc_p x 1]  array of system euler param normalization constraints
+  ɸF::Array{Float64}        #[nc   x 1]  array of system constraint equations, Full
+
+  νk::Array{Float64}        #[nc_k x 1] system velocity equations for kinematic and driving constraints
+  νp::Array{Float64}        #[nc_p x 1] system velocity equations euler parameters
+  νF::Array{Float64}        #[nc   x 1] system velocity equations, Full
+
+  𝛾k::Array{Float64}        #[nc_k x 1] system acceleration equations for kinematic and driving constraints
+  𝛾p::Array{Float64}        #[nc_p x 1] system acceleration equations for euler parameters
+  𝛾F::Array{Float64}        #[nc   x 1] system acceleration equations, Full
 
   #constraint matricies
-  ɸk::Array{Float64}        #[nc_k x 1]  array of system non-linear equations of constraint
-  ɸp::Array{Float64}        #[nc_p x 1]  array of system equations of constraint - including euler params
-  ɸF::Array{Float64}        #[nc  x 1 ]  array of system
-  ɸk_r::Array{Float64}      #[nc_k x 3nb]
-  ɸk_p::Array{Float64}      #[nc_k x 4nb]
-  ɸF_q::Array{Float64}      #[nc x 7nb]
+  ɸk_r::Array{Float64}      #[nc_k x 3nb] partial derivative of the kinematic constraint equations WRT positional GC's
+  ɸk_p::Array{Float64}      #[nc_k x 4nb] partial derivative of the kinematic constraint equations WRT orientational GC's
+  ɸF_q::Array{Float64}      #[nc   x 7nb] partial derivative of system constraints (ɸF) WRT system Generalized coordinates
 
-  #dynamics
+  #dynamics quantities
+  M                         #[3nb x 3nb] System Mass Matrix  (static)
+  Jᵖ                        #[4nb x 4nb] System Inertia matrix
+  λk                        #[nc_k  x 1] System kinematic and driving constraint lagrange multiplier
+  λp                        #[nc_p  x 1] System euler parameters lagrange multipliers
+  λF                        #[nc    x 1] System lagrange multier, Full
+
 
 
   function Sim(nbodies = 2)  #total number of bodies to be added to the system , apriori
@@ -115,8 +123,32 @@ end
 #matrix builder functions construct simulation / system level matricies used in
 #kinematic and dynamic analysis from the state information of the bodies within
 #the simulation. and by evaluating the functions of each geometric constraint.
-#
-#vel and accel RHS's
+
+#position equation matrix builders
+"""position equations for the kinematic and driving constraints"""
+function buildɸk(sim::Sim) #[nc_k x 1]
+  row = 1;
+  for con in sim.cons
+    sim.ɸk[row:row+con.rDOF - 1] = ϕ(con)
+    row = row + con.rDOF
+  end
+end
+"""euler position constraint equations"""
+function buildɸp(sim::Sim)
+  row = 1;
+  for pCon in sim.pCons
+    sim.ɸp[row:row+pCon.rDOF - 1] = ϕ(pCon)
+    row = row + pCon.rDOF
+  end
+end
+"""combined position equations"""
+function buildɸF(sim::Sim)
+  buildɸk(sim)
+  buildɸp(sim)
+  sim.ɸF = [sim.ɸk ; sim.ɸp]
+end
+
+#velocity equation matrix builders
 """velocity equations for the kinematic and driving constraints"""
 function buildνk(sim::Sim)
   row = 1;
@@ -140,6 +172,8 @@ function buildνF(sim::Sim)
   sim.νF = [sim.νk ; sim.νp]
 
 end
+
+#acceleration equation matrix builders
 """acceleration equations for the kinematic and driving constraints"""
 function build𝛾k(sim::Sim)
   row = 1;
@@ -163,29 +197,7 @@ function build𝛾F(sim::Sim)
   sim.𝛾F = [sim.𝛾k ; sim.𝛾p]
 end
 
-#constraint matricies
-"""position equations for the kinematic and driving constraints"""
-function buildɸk(sim::Sim) #[nc_k x 1]
-  row = 1;
-  for con in sim.cons
-    sim.ɸk[row:row+con.rDOF - 1] = ϕ(con)
-    row = row + con.rDOF
-  end
-end
-"""euler position constraint equations"""
-function buildɸp(sim::Sim)
-  row = 1;
-  for pCon in sim.pCons
-    sim.ɸp[row:row+pCon.rDOF - 1] = ϕ(pCon)
-    row = row + pCon.rDOF
-  end
-end
-"""combined position equations"""
-function buildɸF(sim::Sim)
-  buildɸk(sim)
-  buildɸp(sim)
-  sim.ɸF = [sim.ɸk ; sim.ɸp]
-end
+#constraint equations partial derivatives WRT system GC's
 """partial of the kinematic and driving constraint equations WRT position GC's"""
 function buildɸk_r(sim::Sim)
   #insert calculated partial derivative into sim.ɸk_r matrix
