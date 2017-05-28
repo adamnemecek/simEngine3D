@@ -250,6 +250,58 @@ function buildɸF_q(sim::Sim)
 
 end
 
+#-----------------------dynamics matrix builders--------------------------------
+"""system mass matrix (static)"""
+function buildM(sim::Sim)    #10.5  slide 27
+  for body in sim.bodies
+    Ind = 3*(body.ID - 1) + 1;
+    insertUL!(sim.M, body.m*eye(3),(Ind, Ind))
+  end
+end
+
+"""system Inertia Matrix"""
+function buildJᵖ(sim::Sim)    #10.5  slide 27
+  for body in sim.bodies
+    Ind = 4*(body.ID - 1) + 1
+    jᵖ = 4*G(p(body))'*body.j*G(p(body))
+    insertUL!(sim.Jᵖ, jᵖ, (Ind, Ind))
+  end
+end
+
+"""system euler parameter matrix"""
+function buildP(sim::Sim)    #10.5  slide 27
+  for body in sim.bodies
+    rInd = body.ID ; cInd = 4*(body.ID - 1) + 1
+    insertUL!(sim.P, p(body), (rInd, cInd))
+  end
+end
+
+
+"""system applied forces vector"""
+function buildF(sim::Sim)    #10.5  slide 27
+  for body in sim.bodies
+    Ind = 3*(body.ID - 1) + 1;
+    insertUL!(sim.M, body.m*eye(3),(Ind, Ind))
+  end
+end
+
+"""system applied torques vector"""
+function buildτ(sim::Sim)    #10.5  slide 27
+  for body in sim.bodies
+    Ind = 3*(body.ID - 1) + 1;
+    insertUL!(sim.M, body.m*eye(3),(Ind, Ind))
+  end
+end
+
+
+
+
+
+
+
+
+
+
 
 #---------------------------calculated states-----------------------------------
 nDOF(sim::Sim) = sim.nb*7 - sim.nc
