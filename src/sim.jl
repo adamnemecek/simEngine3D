@@ -40,12 +40,15 @@ type Sim
   ɸk_p::Array{Float64}      #[nc_k x 4nb] partial derivative of the kinematic constraint equations WRT orientational GC's
   ɸF_q::Array{Float64}      #[nc   x 7nb] partial derivative of system constraints (ɸF) WRT system Generalized coordinates
 
-  #dynamics quantities
-  M                         #[3nb x 3nb] System Mass Matrix  (static)
-  Jᵖ                        #[4nb x 4nb] System Inertia matrix
-  λk                        #[nc_k  x 1] System kinematic and driving constraint lagrange multiplier
-  λp                        #[nc_p  x 1] System euler parameters lagrange multipliers
-  λF                        #[nc    x 1] System lagrange multier, Full
+  #dynamics quantities  10.5  slide 27
+  M::Array{Float64}         #[3nb x 3nb] System Mass Matrix  (static)
+  Jᵖ::Array{Float64}        #[4nb x 4nb] System Inertia matrix
+  λk::Array{Float64}        #[nc_k  x 1] System kinematic and driving constraint lagrange multiplier
+  λp::Array{Float64}        #[nc_p  x 1] System euler parameters lagrange multipliers
+  λF::Array{Float64}        #[nc    x 1] System lagrange multier, Full
+  P::Array{Float64}         #[nb  x 4nb] System Euler parameter matrix
+  F::Array{Float64}         #[3nb x   1] vector of system applied forces from gravity or tsda
+  τh::Array{Float64}        #[4nb x   1] vector of system applied torques from
 
 
 
@@ -286,7 +289,7 @@ function buildF(sim::Sim)    #10.5  slide 27
 end
 
 """system applied torques vector"""
-function buildτ(sim::Sim)    #10.5  slide 27
+function buildτh(sim::Sim)    #10.5  slide 27
   for body in sim.bodies
     Ind = 3*(body.ID - 1) + 1;
     insertUL!(sim.M, body.m*eye(3),(Ind, Ind))

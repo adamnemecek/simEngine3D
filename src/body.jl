@@ -9,7 +9,7 @@ type Body
 
   #dynamics
   m::Real              #mass of the body
-  J::Array            #inertia tensor
+  J::Array             #inertia tensor
 
   #constructor function
   function Body(sim::Sim, ID::Int,m = 1; J = eye(3))
