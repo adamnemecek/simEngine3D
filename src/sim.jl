@@ -55,8 +55,8 @@ type Sim
   τh::Array{Float64}        #[4nb x   1] vector of system applied torques from tsda or rsda
 
   #reaction forces and torques  10.5  slide 16
-  Fʳ::Array{Float64} ## more thought on these later...
-  nʳ::Array{Float64} ##
+  Fʳ::Array{Float64}        #[3nb x   1] vector of system reaction forces
+  nbarʳ::Array{Float64}     #[3nb x   1] vector of system reaction torques
 
 
 
@@ -307,9 +307,9 @@ function buildF(sim::Sim)    #10.5  slide 27
   for sda in sdas
     if isa(sda,TSDA)
       #add forces on body i to Fᵃ
-      sim.Fᵃ[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1] += Fi(sda)
+      sim.Fᵃ[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += Fi(sda)
       #add forces on body j to Fᵃ
-      sim.Fᵃ[3*(sda.bodyj.ID - 1) + 1:sda.bodyi.ID, 1:1] += Fj(sda)
+      sim.Fᵃ[3*(sda.bodyj.ID - 1) + 1:3*sda.bodj.ID, 1:1] += Fj(sda)
     end
   end
   sim.F = sim.Fᵐ + sim.Fᵃ
@@ -320,9 +320,9 @@ function buildnbar(sim::Sim)
   sim.nbar = zeros(3*sim.nb,1)
   for sda in sdas #remember, there can be multiple sda's per body
     #add torques on bodyi to nbar
-    nbar[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1] += nbari(sda)
+    nbar[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += nbari(sda)
     #add torques on bodyj to nbar
-    nbar[3*(sda.bodyj.ID - 1) + 1:sda.bodyi.ID, 1:1] += nbari(sda)
+    nbar[3*(sda.bodyj.ID - 1) + 1:3*sda.bodyj.ID, 1:1] += nbari(sda)
   end
 end
 
@@ -332,10 +332,25 @@ function buildτh(sim::Sim)    #10.5  slide 27
   buildnbar();
   #build τh from nbar and Ji
   for body in sim.bodies
-    nbari = sim.nbar[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1]
+    nbari = sim.nbar[3*(body.ID - 1) + 1:3*body.ID, 1:1]
     sim.τh[4(body.ID-1)+1:4*body.ID,1:1] = 2*G(body)'*nbari + 8*Gdot(body)'*body.J*Gdot(body)*p(body)
   end
+end
 
+"""vector of the reaction forces"""
+function buildFʳ(sim::Sim)
+  sim.Fʳ = sim.ɸk_r'*sim.λk
+end
+
+"""vector of reaction torques"""
+function buildnbarʳ(sim::Sim) #10.5 slide 26 , inverted
+  τhʳ = zeros(4*sim.nb,1)
+  τhʳ = -sim.ɸk_p'*sim.λk
+  #convert from euler parameter representation to ω
+  for body in sim.bodies
+    nbarʳi = .5*G(body)*τhʳ[4(body.ID-1)+1:4*body.ID,1:1]
+    sim.nbarʳ[3*(body.ID - 1) + 1:3*body.ID, 1:1] = nbarʳi
+  end
 end
 
 
