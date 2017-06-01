@@ -1,30 +1,27 @@
 
-#this may be moved in the future.
-#push!(LOAD_PATH , "C:\\Users\\Alex\\Documents\\gitRepos\\simEngine3D")
+#the utilities module provides utility functionality useful throughout
+#Simbody3D
 """
-the utilities module provides utility functionality useful throughout
-Simbody3D
+B matrix = [A(p)sbar] p is useful in calculating partial derivative of ϕ wrt GC's
+inputs: Pi = euler params [4x1], siBar = point location in LRF [3x1]
+output: B = [3x4]
 """
 
 function B(Pi::Array,siBar::Array) #9.28.2016 slide 12
-  """
-  B matrix = [A(p)sbar]_p is useful in calculating partial derivative of ϕ wrt GC's
-  inputs: Pi = euler params [4x1], siBar = point location in LRF [3x1]
-  output: B = [3x4]
-  """
+
   e0 = Pi[1]
   e  = Pi[2:4]
   b = 2*[(e0*eye(3) + tilde(e))*siBar   e*siBar' - (e0*eye(3) + tilde(e))*tilde(siBar) ]
 end
 
-function G(Pi::Array)
-  e0 = Pi[1] ; e = Pi[2:4]
+"""[3x4] matrix used for converting between EP and ω orientation representations"""
+function G(p::Array)
+  e0 = p[1] ; e = p[2:4]
   G = [-e -tilde(e) + e0*eye(3)]
 end
 
-
+"""takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
 function P2A(Pi::Array)   #kinematic key formulas
-  """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
   e0 = Pi[1]
   e = Pi[2:4]
   E =  [-e  tilde(e) + e0*eye(3)]
@@ -33,9 +30,8 @@ function P2A(Pi::Array)   #kinematic key formulas
   return A
 end
 
-
+"""takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters"""
 function A2P(A::Array) #9.21 slide 20
-  """takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters"""
   e0 = sqrt((trace(A) + 1)/4)
   if e0 != 0
     e1 = (A[3,2] - A[2,3])/(4*e0)
@@ -45,36 +41,37 @@ function A2P(A::Array) #9.21 slide 20
   p = [e0 e1 e2 e3]'
 end
 
+"""tilde takes a 3x1 vector and makes it the cross product operator matrix ~ """
 function tilde(a::Array)  #kinematic key formulas
-  """tilde takes a 3x1 vector and makes it the cross product operator matrix ~ """
   Atil = [ 0  -a[3]  a[2];
          a[3]    0  -a[1];
         -a[2]  a[1]    0  ]
   return Atil
 end
 
+"""determines the distance in the GRF between point Pi and Qj"""
 function dij(bi::Body,bj::Body,PiBar::Array,QjBar::Array) #9.26.2017 slide 14
-  """determines the distance in the GRF between point Pi and Qj"""
   return r(bj) + A(bj)*QjBar -(r(bi) + A(bi)*PiBar )
 
 end
 
+"""time derivative of dij"""
 function dijdot(bi::Body,bj::Body,PiBar::Array,QjBar::Array) #10.7.2017 slide 7
-  """time derivative of dij"""
   return rdot(bj)+ B(p(bj),QjBar)*pdot(bj) -rdot(bi) - B(p(bi),PiBar)*pdot(bi)
 end
 
+
+"""
+insert a smaller matrix h, into a bigger matrix A by overwriting elements of A
+with h. The upper left hand corners of both matricies at ind (x,y)
+input:
+  A - larger, outer matrix where a part is being overwritten
+  h - smaller matrix to be inserted into a
+  ind - (x,y) location
+output:
+  !indicates A is motified inplace , nothing is returned
+"""
 function insertUL!(A, h , ind)
-  """
-  insert a smaller matrix h, into a bigger matrix A by overwriting elements of A
-  with h. The upper left hand corners of both matricies at ind (x,y)
-  input:
-    A - larger, outer matrix where a part is being overwritten
-    h - smaller matrix to be inserted into a
-    ind - (x,y) location
-  output:
-    !indicates A is motified inplace , nothing is returned
-  """
   row, col = size(h)
   x , y = ind[1] , ind[2]
   A[x:x+row-1 ,y:y+col-1] = h

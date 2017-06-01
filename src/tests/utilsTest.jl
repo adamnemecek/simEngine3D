@@ -19,6 +19,12 @@
               0 0 2 2;
               0 0 2 2 ];
     @test A == result
+
+    #insert into a 1D matri
+    q_examp = [0 0 0 0 0 0 0]'
+    h = [1 2 3]'
+    SE.insertUL!(q_examp,h,(1,1))
+    @test q_examp == [1 2 3 0 0 0 0]'
   end
 
 end

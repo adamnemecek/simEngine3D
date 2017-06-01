@@ -7,7 +7,7 @@ output: hist - an array of history terms
 """
 function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   if nDOF(sim) > 0
-    error("system is underconstrainted, and therefore kinematic analysis cannot continue")
+    error("system is underconstrainted, and therefore Kinematic Analysis cannot continue")
   end
   buildɸF_q(sim)
   if rank(sim.ɸF_q) < sim.nc
@@ -48,7 +48,7 @@ end
 solve the non-linear equations of constraint using an iterative newton-rapson
 approach. results in solution for q at time t
 """
-function positionAnalysis(sim::Sim , ϵ = 1e-9 , maxIter = 100)
+function positionAnalysis(sim::Sim , ϵ = 1e-9 , maxIter = 100) #9.29 S69
   initial_q = sim.q ; ΔqNorm = 1; counter = 1
   while  ΔqNorm  > ϵ
     buildɸF(sim)
