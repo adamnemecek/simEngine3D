@@ -21,6 +21,7 @@ type Sim
   bodies::Any               #[nb    x 1] array of body objects in the system
   cons::Any                 #[nCons x 1] array of constraint objects in system
   pCons::Any                #[nb    x 1] array of euler parameter constraint objects
+  sdas::Any                 #[nSdas x 1] array of Spring-Damper-Actuator objects, TSDA's and RSDA's
 
   #constraint equations
   ɸk::Array{Float64}        #[nc_k x 1]  array of system non-linear equations of constraint
@@ -47,8 +48,16 @@ type Sim
   λp::Array{Float64}        #[nc_p  x 1] System euler parameters lagrange multipliers
   λF::Array{Float64}        #[nc    x 1] System lagrange multier, Full
   P::Array{Float64}         #[nb  x 4nb] System Euler parameter matrix
-  F::Array{Float64}         #[3nb x   1] vector of system applied forces from gravity or tsda
-  τh::Array{Float64}        #[4nb x   1] vector of system applied torques from
+  Fᵐ::Array{Float64}        #[3nb x   1] vector of applied forces due to gravity (static)
+  Fᵃ::Array{float64}        #[3nb x   1] vector of applied forces due to tsda's
+  F::Array{Float64}         #[3nb x   1] vector sum of system applied forces, F = Fᵐ + Fᵃ
+  nbar::Array{Float64}      #[3nb x   1] vector of system torques on each body in ω formulation
+  τh::Array{Float64}        #[4nb x   1] vector of system applied torques from tsda or rsda
+
+  #reaction forces and torques  10.5  slide 16
+  Fʳ::Array{Float64} ## more thought on these later...
+  nʳ::Array{Float64} ##
+
 
 
 
@@ -56,9 +65,9 @@ type Sim
     #make a blank simulation
     nb = nbodies; nc = 0 ; nc_k = 0 ; nc_p = 0 ; t= 0.0
     q = zeros(7*nb,1); qdot = zeros(7*nb,1); qddot = zeros(7*nb,1)
-    bodies = Array{Any}(0); cons =Array{Any}(0); pCons = Array{Any}(0)
+    bodies = Array{Any}(0); cons =Array{Any}(0); pCons = Array{Any}(0); sdas = Array{Any}(0)
 
-    new(nb,nc,nc_k,nc_p,t, q,qdot,qddot, bodies,cons,pCons)
+    new(nb,nc,nc_k,nc_p,t, q,qdot,qddot, bodies,cons,pCons,sdas)
 
   end
 
@@ -118,6 +127,10 @@ function initForAnalysis(sim::Sim)
   sim.ɸk_r = zeros(sim.nc_k,3*sim.nb)
   sim.ɸk_p = zeros(sim.nc_k,4*sim.nb)
   sim.ɸF_q = zeros(sim.nc,7*sim.nb)
+
+  #set up static matricies used in ID and D
+  buildM(sim)
+  buildFᵐ(sim)
 end
 
 
@@ -279,21 +292,50 @@ function buildP(sim::Sim)    #10.5  slide 27
   end
 end
 
-
-"""system applied forces vector"""
-function buildF(sim::Sim)    #10.5  slide 27
+"""static vector of mass distributed forces (gravitational forces acting on each body)"""
+function buildFᵐ(sim::Sim)    #10.5  slide 26
   for body in sim.bodies
-    Ind = 3*(body.ID - 1) + 1;
-    insertUL!(sim.M, body.m*eye(3),(Ind, Ind))
+    Ind = 3*(body.ID - 1) + 1; Fi = body.m * [0 0 -9.81]'
+    insertUL!(sim.Fᵐ,Fi, (Ind, 1))
   end
 end
 
+
+"""system applied forces vector F = Fᵐ + Fᵃ"""
+function buildF(sim::Sim)    #10.5  slide 27
+  sim.Fᵃ = zeros(3*sim.nb,1)
+  for sda in sdas
+    if isa(sda,TSDA)
+      #add forces on body i to Fᵃ
+      sim.Fᵃ[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1] += Fi(sda)
+      #add forces on body j to Fᵃ
+      sim.Fᵃ[3*(sda.bodyj.ID - 1) + 1:sda.bodyi.ID, 1:1] += Fj(sda)
+    end
+  end
+  sim.F = sim.Fᵐ + sim.Fᵃ
+end
+
+"""build nbar from sdas, but don't store """
+function buildnbar(sim::Sim)
+  sim.nbar = zeros(3*sim.nb,1)
+  for sda in sdas #remember, there can be multiple sda's per body
+    #add torques on bodyi to nbar
+    nbar[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1] += nbari(sda)
+    #add torques on bodyj to nbar
+    nbar[3*(sda.bodyj.ID - 1) + 1:sda.bodyi.ID, 1:1] += nbari(sda)
+  end
+end
+
+
 """system applied torques vector"""
 function buildτh(sim::Sim)    #10.5  slide 27
+  buildnbar();
+  #build τh from nbar and Ji
   for body in sim.bodies
-    Ind = 3*(body.ID - 1) + 1;
-    insertUL!(sim.M, body.m*eye(3),(Ind, Ind))
+    nbari = sim.nbar[3*(sda.bodyi.ID - 1) + 1:sda.bodyi.ID, 1:1]
+    sim.τh[4(body.ID-1)+1:4*body.ID,1:1] = 2*G(body)'*nbari + 8*Gdot(body)'*body.J*Gdot(body)*p(body)
   end
+
 end
 
 
