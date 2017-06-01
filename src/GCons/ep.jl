@@ -34,7 +34,7 @@ function ν(con::ep)
   nu = 0
 end
 
-function 	𝛾(con::ep)
+function 	𝛾(con::ep) 
   """
   RHS of accel equation
   output: [1 x 1] evaluation ν
