@@ -128,6 +128,13 @@ function initForAnalysis(sim::Sim)
   sim.ɸk_p = zeros(sim.nc_k,4*sim.nb)
   sim.ɸF_q = zeros(sim.nc,7*sim.nb)
 
+  #init dynamics based data structures for the same reason
+  sim.M = zeros(3*sim.nb,3*sim.nb);  sim.Jᵖ = zeros(4*sim.nb,4*sim.nb); sim.P = zeros(sim.nb, 4*sim.nb)
+  sim.λk= zeros(sim.nc_k,1)       ;  sim.λp = zeros(sim.nc_p,1)       ; sim.λF = zeros(sim.nc,1)
+  sim.Fᵐ = zeros(3*sim.nb,1)      ;  sim.Fᵃ = zeros(sim.3nb,1)        ; sim.F = zeros(3*sim.nb,1)
+  sim.nbar = zeros(3*sim.nb,1)    ;  sim.τh = zeros(4*sim.nb,1)
+  sim.Fʳ= zeros(3*sim.nb,1)       ;  sim.nbarʳ= zeros(3*sim.nb,1)
+
   #set up static matricies used in ID and D
   buildM(sim)
   buildFᵐ(sim)
@@ -315,7 +322,7 @@ function buildF(sim::Sim)    #10.5  slide 27
   sim.F = sim.Fᵐ + sim.Fᵃ
 end
 
-"""build nbar from sdas, but don't store """
+"""build nbar from sdas """
 function buildnbar(sim::Sim)
   sim.nbar = zeros(3*sim.nb,1)
   for sda in sdas #remember, there can be multiple sda's per body
