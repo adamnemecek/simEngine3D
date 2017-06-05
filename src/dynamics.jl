@@ -37,7 +37,7 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
       BDF(sim,2,δt,tInd,hist)
     end
     #store simulation state snapshot
-    snapShot(sim,2,tInd)
+    snapShot(sim)
     tInd += 1
   end
 
@@ -95,17 +95,15 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
   buildɸk_p(sim)
   buildP(sim)
   buildJᵖ(sim)
-  z12 = zeros(3*sim.nb,4*sim.nb)
-  z13 = zeros(3*sim.nb,sim.nb)
-  z21 = z12'
-  z31 = z13'
-  z34 = zeros(sim.nb,sim.nc)
-  z43 = z34'
+  z21 = zeros(4*sim.nb,3*sim.nb)
+  z31 = zeros(sim.nb,sim.3nb)
+  z33 = zeros(sim.nb,sim.nb)
   z44 = zeros(sim.nc,sim.nc)
+  z43 = zeros(sim.nc,sim.nb)
 
-  LHS = [sim.M    z12      z13    sim.ɸk_r';
+  LHS = [sim.M    z21'     z31'   sim.ɸk_r';
          z21      sim.Jᵖ   sim.P' sim.ɸk_p';
-         z31      sim.P    z33    z34      ;
+         z31      sim.P    z33    z43'     ;
          sim.ɸk_r sim.ɸk_p z43    z44      ]
 
   #build RHS
@@ -122,7 +120,7 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
   sim.λp = L2[(7*sim.nb + 1):(7*sim.nb + 1 + sim.nc_p), 1:1]
   sim.λk = L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
 
-  #build the reaction force vector for archiving in history  buildFʳ(sim)
+  #build the reaction force vector for archiving in history
   buildFʳ(sim)
   buildnbarʳ(sim)
 
@@ -193,9 +191,9 @@ BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 sli
 
     #step 3: solve the linear system ψ*Δz = -g
     #compute ψ
-    ψ   = [sim.M    z12      z13    sim.ɸk_r';
+    ψ =   [sim.M    z21'     z31'   sim.ɸk_r';
            z21      sim.Jᵖ   sim.P' sim.ɸk_p';
-           z31      sim.P    z33    z34      ;
+           z31      sim.P    z33    z43'     ;
            sim.ɸk_r sim.ɸk_p z43    z44      ]
 
     #solve linear system for correction Δz
@@ -213,5 +211,16 @@ BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 sli
       break
     end
     ν += 1
-    #step 6:
+  end
+  #step 6: accept, and perform step 1 to update q and qdot to most recent values
+  #step 1: compute the position and velocity using BDF and most recent qddot estimates
+  rn  = Cʳ + β₀^2*δt^2*rddot(sim) ; rndot = Cʳdot + β₀*δt*rddot(sim)
+  pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; rndot = Cᵖdot + β₀*δt*pddot(sim)
+  #update sim level vars with q and qddot estimates
+  sim.q = [rn ; pn] ; sim.qdot = [rndot ; pndot]
+
+  #build the reaction force vector for archiving in history
+  buildFʳ(sim)
+  buildnbarʳ(sim)
+
   end
