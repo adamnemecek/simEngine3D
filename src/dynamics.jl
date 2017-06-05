@@ -30,11 +30,11 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     end
 
     if tInd = 2  #use BDF of order to seed future solutions
-      BDF(sim,1,δt,hist)
+      BDF(sim,1,δt,tInd,hist)
     end
 
     if tInd >= 3 #perform full integration with BDF order 2
-      BDF(sim,2,δt,hist)
+      BDF(sim,2,δt,tInd,hist)
     end
     #store simulation state snapshot
     snapShot(sim,2,tInd)
@@ -132,13 +132,33 @@ end
 solves for the system state information, at a single time step, by following The
 6 steps outlined in 10.19 slide 17, using the quazi newton ψ matrix
 """
-BDF(sim::Sim,BDForder::Int64,δt::Float64, hist::History ) #10.19 slide 17
+BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 slide 17
   #interation constants
   mxInterations = 100;
   tolerance = 1e-2;
 
   #step 0: done, system should be incremented and up to derivative
   #step 1: compute the position and velocity using BDF and most recent qddot estimates
+    #handle the different order of BDF
+  if BDForder == 1  # 10.14 slide 19 table
+    β₀ =  1
+    α₁ = -1
+    Cʳdot = -α₁*rdot(hist,tInd - 1)
+    Cᵖdot = -α₁*pdot(hist,tInd - 1)
+    Cʳ =    -α₁*r(hist,tInd - 1) + β₀*δt*Cʳdot
+    Cᵖ =    -α₁*p(hist,tInd - 1) + β₀*δt*Cᵖdot
+  end
+
+  if BDForder == 2
+    β₀ =  2/3
+    α₁ = -4/3
+    α₂ =  1/3
+    Cʳdot = -α₁*rdot(hist,tInd - 1)  - α₂*rdot(hist,tInd - 2)
+    Cᵖdot = -α₁*pdot(hist,tInd - 1)  - α₂*pdot(hist,tInd - 2)
+    Cʳ =    -α₁*r(hist,tInd - 1) - α₂*r(hist,tInd - 2) + β₀*δt*Cʳdot
+    Cᵖ =    -α₁*p(hist,tInd - 1) - α₂*p(hist,tInd - 2) + β₀*δt*Cᵖdot
+
+  end
   #step 2: compute the residual in the nonlinear system. i.e. evaluate g(z) at ν
   #step 3: solve the linear system ψ*Δz = -g
   #step 4: Improve the quality of the approximate solution z(ν+1) = z(ν) + Δz
