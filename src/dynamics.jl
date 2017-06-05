@@ -112,5 +112,39 @@ function checkInitialConditions(sim::Sim, ϵ = .0001)
 end
 
 """given intial level 0 and 1 conditions, solve for the level 2 conditions"""
-function findInitialL2conditions(sim) # 10.19 slide 16
+function findInitialL2conditions(sim::Sim) # 10.19 slide 16
+  #construct the required system level state variables
+  #build LHS
+  buildM(sim)
+  buildɸk_r(sim)
+  buildɸk_p(sim)
+  buildP(sim)
+  buildJᵖ(sim)
+  z12 = zeros(3*sim.nb,4*sim.nb)
+  z13 = zeros(3*sim.nb,sim.nb)
+  z21 = z12'
+  z31 = z13'
+  z34 = zeros(sim.nb,sim.nc)
+  z43 = z34'
+  z44 = zeros(sim.nc,sim.nc)
+
+  LHS = [sim.M    z12      z13    sim.ɸk_r';
+         z21      sim.Jᵖ   sim.P' sim.ɸk_p';
+         z31      sim.P    z33    z34      ;
+         sim.ɸk_r sim.ɸk_p z43    z44      ]
+
+  #build RHS
+  buildF(sim)
+  buildτh(sim)
+  build𝛾p(sim)
+  build𝛾k(sim)
+
+  RHS = [sim.F ; sim.τh ; sim.𝛾p ; sim.𝛾k]
+
+  #solve for the level 2 compontents @ t0
+  L2 = LHS \ RHS
+  sim.q =  L2[1:7*sim.nb, 1:1]
+  sim.λp = L2[(7*sim.nb + 1):(7*sim.nb + 1 + sim.nc_p), 1:1]
+  sim.λk = L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
+
 end
