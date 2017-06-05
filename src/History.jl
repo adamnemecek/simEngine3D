@@ -13,8 +13,8 @@ type History
     q =     zeros(length(sim.q),length(tgrid))
     qdot =  zeros(length(sim.qdot),length(tgrid))
     qddot = zeros(length(sim.qddot),length(tgrid))
-    Fʳ    = zeros(3*sim.nb,length(tgrid))  #might not be initialized at time of hist creation
-    nbarʳ = zeros(3*sim.qddot,length(tgrid))
+    Fʳ    = zeros(length(sim.Fʳ),length(tgrid))  #might not be initialized at time of hist creation
+    nbarʳ = zeros(length(sim.nbarʳ),length(tgrid))
     new(q,qdot,qddot,Fʳ,nbarʳ,tgrid)
   end
 end
@@ -29,3 +29,25 @@ function snapShot(sim::Sim,hist::History,tInd::Int64)
     hist.nbarʳ[:,tInd] = sim.nbarʳ
 
 end
+
+#-----------------------------extractor functions-------------------------------------
+#iso-time extractor (used in dynamics for history)
+r(sim::Sim, hist::History,tInd::Int64)         hist.q[1:3*sim.nb, tInd:tInd]
+rdot(sim::Sim, hist::History,tInd::Int64)   hist.qdot[1:3*sim.nb, tInd:tInd]
+rddot(sim::Sim, hist::History,tInd::Int64) hist.qddot[1:3*sim.nb, tInd:tInd]
+
+p(sim::Sim, hist::History,tInd::Int64)         hist.q[3*sim.nb+1:end, tInd:tInd]
+pdot(sim::Sim, hist::History,tInd::Int64)   hist.qdot[3*sim.nb+1:end, tInd:tInd]
+pdot(sim::Sim, hist::History,tInd::Int64)  hist.qddot[3*sim.nb+1:end, tInd:tInd]
+
+
+#iso-body extractor (used in plotting functions)
+# r(hist::History,tInd::Int64)         hist.q[1:3*sim.nb, tInd:tInd]
+# rdot(hist::History,tInd::Int64)   hist.qdot[1:3*sim.nb, tInd:tInd]
+# rddot(hist::History,tInd::Int64) hist.qddot[1:3*sim.nb, tInd:tInd]
+#
+# p(sim::Sim, hist::History,tInd::Int64)         hist.q[3*sim.nb+1:end, tInd:tInd]
+# pdot(sim::Sim, hist::History,tInd::Int64)   hist.qdot[3*sim.nb+1:end, tInd:tInd]
+# pdot(sim::Sim, hist::History,tInd::Int64)  hist.qddot[3*sim.nb+1:end, tInd:tInd]
+#
+#
