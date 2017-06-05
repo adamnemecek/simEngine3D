@@ -135,11 +135,9 @@ solves for the system state information, at a single time step, by following The
 BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 slide 17
   #interation constants
   mxInterations = 100;
-  tolerance = 1e-2;
+  ϵ = 1e-2;
 
-  #step 0: done, system should be incremented and up to derivative
-  #step 1: compute the position and velocity using BDF and most recent qddot estimates
-    #handle the different order of BDF
+  #handle the different order of BDF
   if BDForder == 1  # 10.14 slide 19 table
     β₀ =  1
     α₁ = -1
@@ -157,11 +155,63 @@ BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 sli
     Cᵖdot = -α₁*pdot(hist,tInd - 1)  - α₂*pdot(hist,tInd - 2)
     Cʳ =    -α₁*r(hist,tInd - 1) - α₂*r(hist,tInd - 2) + β₀*δt*Cʳdot
     Cᵖ =    -α₁*p(hist,tInd - 1) - α₂*p(hist,tInd - 2) + β₀*δt*Cᵖdot
-
   end
-  #step 2: compute the residual in the nonlinear system. i.e. evaluate g(z) at ν
-  #step 3: solve the linear system ψ*Δz = -g
-  #step 4: Improve the quality of the approximate solution z(ν+1) = z(ν) + Δz
-  #step 5: increment ν, check if  satisfactory convergence is reached
-  #step 6:
+
+  #step 0: prime new step from previous step
+  #sim state variables remain unchanged from previous step
+  #initialize constant matricies useful in construction of ψ
+  z21 = zeros(4*sim.nb,3*sim.nb)
+  z31 = zeros(sim.nb,sim.3nb)
+  z33 = zeros(sim.nb,sim.nb)
+  z44 = zeros(sim.nc,sim.nc)
+  z43 = zeros(sim.nc,sim.nb)
+
+  ν = 0;
+  while ν <mxInterations
+    #step 1: compute the position and velocity using BDF and most recent qddot estimates
+    rn  = Cʳ + β₀^2*δt^2*rddot(sim) ; rndot = Cʳdot + β₀*δt*rddot(sim)
+    pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; rndot = Cᵖdot + β₀*δt*pddot(sim)
+    #update sim level vars with q and qddot estimates
+    sim.q = [rn ; pn] ; sim.qdot = [rndot ; pndot]
+
+    #step 2: compute the residual in the nonlinear system. i.e. evaluate g(z) at ν
+    #build matricies that depend on new q,qddot estimates
+    #buildM(sim) const and already built
+    buildɸF(sim)
+    buildɸk_r(sim)
+    buildɸk_p(sim)
+    buildP(sim)
+    buildJᵖ(sim)
+    buildF(sim)
+    buildτh(sim)
+
+    #compute g(z)
+    gn = [sim.M*rddot(sim)  + sim.ɸk_r'*sim.λk - sim.F ;
+         sim.Jᵖ*pddot(sim)  + sim.ɸk_p'*sim.λk + sim.P'*sim.λp - sim.τh;
+         1/(β₀^2*δt^2)*sim.ɸp;
+         1/(β₀^2*δt^2)*sim.ɸk                                            ]
+
+    #step 3: solve the linear system ψ*Δz = -g
+    #compute ψ
+    ψ   = [sim.M    z12      z13    sim.ɸk_r';
+           z21      sim.Jᵖ   sim.P' sim.ɸk_p';
+           z31      sim.P    z33    z34      ;
+           sim.ɸk_r sim.ɸk_p z43    z44      ]
+
+    #solve linear system for correction Δz
+    Δz = ψ \ -gn
+
+    #step 4: Improve the quality of the approximate solution z(ν+1) = z(ν) + Δz
+    z_old = [sim.qddot ; sim.λp ; sim.λk]
+    z_new = z_old + Δz
+    #update system variables
+    sim.qddot = z_new[1:7*sim.nb, 1:1]
+    sim.λp    = z_new[7*sim.nb + 1:8*sim.nb, 1:1]
+    sim.λk    = z_new[8*sim.nb + 1:8*sim.nb + sim.nc_k, 1:1]
+    #step 5: increment ν, check if  satisfactory convergence is reached
+    if norm(Δz) < ϵ
+      break
+    end
+    ν += 1
+    #step 6:
   end
