@@ -4,65 +4,40 @@ Dynamics Analysis  - for systems that are underconstrainted, determine the kinem
 q,qdot,qddot and the reaction forces given the constraints and the externally applied
 forces
 """
-function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)  #10.19 slide 17
+function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   if nDOF(sim) = 0
     error("dynamic analysis should happen with degress of freedom present")
   end
-  #dynamic analysis iteration steps are layed out on 10.19 slide 17
-  #step 0 check the initial conditions to insure that the system starts in a healthy state
+
+  #make sure level zero and level one constraints are consistent
   checkInitialConditions(sim)
 
-  #find the initial qddot and lagrange multipliers, based on supplied level  zero and one checkInitialConditions
+  #find the initial qddot and lagrange multipliers, based on supplied level zero and one checkInitialConditions
   findInitialL2conditions(sim)
-  #construct system constant matricies
-  buildM(sim)
-  #tgrid
-  tgrid = tStart:δt:tStop # type unit range
 
   #setup history
+  tgrid = tStart:δt:tStop # type unit range
   hist = History(sim,tgrid)
   tInd = 1;
-  #iterate through grid and solve equations
+
+  #iterate through time grid and solve dynamics equations
   for instant in tgrid
     #update time
     sim.t = instant
-    #-----------------step 1 - solve Kinematics for qddot-----------------------
-    #don't do position analysis at t = 0
-    if sim.t != tStart
-      positionAnalysis(sim)
+
+    if sim.t = tStart #save snapshot @ t = 0
+      snapshot(sim)
     end
 
-    #do velocity analysis
-    velocityAnalysis(sim)
+    if tInd = 2  #use BDF of order to seed future solutions
+      BDF(sim,1,δt,hist)
+    end
 
-    #acceleration analysis
-    accelerationAnalysis(sim)
-
-    #-----------step 2 - solve for lagrange multipliers using N-E dynamics------
-    #phi_q already up to date
-    buildP(sim)
-    buildJᵖ(sim)
-    buildF(sim)
-    buildτh(sim)
-
-    rddot = sim.qddot[1:3*sim.nb, 1:1]
-    pddot = sim.qddot[3*sim.nb + 1:end, 1:1]
-
-    #from  10.10 slide 12 , in matrix form
-    LHS = [sim.ɸk_r' , zeros(3*sim.nb,sim.nb) ;
-           sim.ɸk_p' ,           sim.P'        ]
-    RHS = [sim.F - sim.M*rddot ;
-          sim.τh -  sim.Jᵖ*pddot]
-
-    sim.λF = LHS / RHS
-    sim.λk = sim.λF[1:sim.nc_k, 1:1]
-    sim.λp = sim.λF[sim.nc_k+1:end, 1:1]
-    #------------------step 3 - calculate reaction forces-----------------------
-    buildFʳ(sim)
-    buildnbarʳ(sim)
-
+    if tInd >= 3 #perform full integration with BDF order 2
+      BDF(sim,2,δt,hist)
+    end
     #store simulation state snapshot
-    snapShot(sim,hist,tInd)
+    snapShot(sim,2,tInd)
     tInd += 1
   end
 
@@ -147,4 +122,26 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
   sim.λp = L2[(7*sim.nb + 1):(7*sim.nb + 1 + sim.nc_p), 1:1]
   sim.λk = L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
 
+  #build the reaction force vector for archiving in history  buildFʳ(sim)
+  buildFʳ(sim)
+  buildnbarʳ(sim)
+
 end
+
+"""
+solves for the system state information, at a single time step, by following The
+6 steps outlined in 10.19 slide 17, using the quazi newton ψ matrix
+"""
+BDF(sim::Sim,BDForder::Int64,δt::Float64, hist::History ) #10.19 slide 17
+  #interation constants
+  mxInterations = 100;
+  tolerance = 1e-2;
+
+  #step 0: done, system should be incremented and up to derivative
+  #step 1: compute the position and velocity using BDF and most recent qddot estimates
+  #step 2: compute the residual in the nonlinear system. i.e. evaluate g(z) at ν
+  #step 3: solve the linear system ψ*Δz = -g
+  #step 4: Improve the quality of the approximate solution z(ν+1) = z(ν) + Δz
+  #step 5: increment ν, check if  satisfactory convergence is reached
+  #step 6:
+  end
