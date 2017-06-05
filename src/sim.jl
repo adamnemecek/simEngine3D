@@ -49,7 +49,7 @@ type Sim
   λF::Array{Float64}        #[nc    x 1] System lagrange multier, Full
   P::Array{Float64}         #[nb  x 4nb] System Euler parameter matrix
   Fᵐ::Array{Float64}        #[3nb x   1] vector of applied forces due to gravity (static)
-  Fᵃ::Array{float64}        #[3nb x   1] vector of applied forces due to tsda's
+  Fᵃ::Array{Float64}        #[3nb x   1] vector of applied forces due to tsda's
   F::Array{Float64}         #[3nb x   1] vector sum of system applied forces, F = Fᵐ + Fᵃ
   nbar::Array{Float64}      #[3nb x   1] vector of system torques on each body in ω formulation
   τh::Array{Float64}        #[4nb x   1] vector of system applied torques from tsda or rsda
@@ -129,11 +129,11 @@ function initForAnalysis(sim::Sim)
   sim.ɸF_q = zeros(sim.nc,7*sim.nb)
 
   #init dynamics based data structures for the same reason
-  sim.M = zeros(3*sim.nb,3*sim.nb);  sim.Jᵖ = zeros(4*sim.nb,4*sim.nb); sim.P = zeros(sim.nb, 4*sim.nb)
-  sim.λk= zeros(sim.nc_k,1)       ;  sim.λp = zeros(sim.nc_p,1)       ; sim.λF = zeros(sim.nc,1)
-  sim.Fᵐ = zeros(3*sim.nb,1)      ;  sim.Fᵃ = zeros(sim.3nb,1)        ; sim.F = zeros(3*sim.nb,1)
-  sim.nbar = zeros(3*sim.nb,1)    ;  sim.τh = zeros(4*sim.nb,1)
-  sim.Fʳ= zeros(3*sim.nb,1)       ;  sim.nbarʳ= zeros(3*sim.nb,1)
+  sim.M    = zeros(3*sim.nb,3*sim.nb);  sim.Jᵖ   = zeros(4*sim.nb,4*sim.nb); sim.P  = zeros(sim.nb, 4*sim.nb)
+  sim.λk   = zeros(sim.nc_k,1)       ;  sim.λp   = zeros(sim.nc_p,1)       ; sim.λF = zeros(sim.nc,1)
+  sim.Fᵐ   = zeros(3*sim.nb,1)       ;  sim.Fᵃ   = zeros(3*sim.nb,1)       ; sim.F  = zeros(3*sim.nb,1)
+  sim.nbar = zeros(3*sim.nb,1)       ;  sim.τh   = zeros(4*sim.nb,1)
+  sim.Fʳ   = zeros(3*sim.nb,1)       ;  sim.nbarʳ= zeros(3*sim.nb,1)
 
   #set up static matricies used in ID and D
   buildM(sim)
@@ -286,7 +286,7 @@ end
 function buildJᵖ(sim::Sim)    #10.5  slide 27
   for body in sim.bodies
     Ind = 4*(body.ID - 1) + 1
-    jᵖ = 4*G(p(body))'*body.j*G(p(body))
+    jᵖ = 4*G(body)'*body.j*G(body)
     insertUL!(sim.Jᵖ, jᵖ, (Ind, Ind))
   end
 end
@@ -360,15 +360,13 @@ function buildnbarʳ(sim::Sim) #10.5 slide 26 , inverted
   end
 end
 
-
-
-
-
-
-
-
-
-
-
 #---------------------------calculated states-----------------------------------
 nDOF(sim::Sim) = sim.nb*7 - sim.nc
+
+r(sim::Sim)         sim.q[1:3*sim.nb, 1:1]
+rdot(sim::Sim)   sim.qdot[1:3*sim.nb, 1:1]
+rddot(sim::Sim) sim.qddot[1:3*sim.nb, 1:1]
+
+p(sim::Sim)         sim.q[3*sim.nb+1:end, 1:1]
+pdot(sim::Sim)   sim.qdot[3*sim.nb+1:end, 1:1]
+pddot(sim::Sim)  sim.qddot[3*sim.nb+1:end, 1:1]

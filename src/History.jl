@@ -44,7 +44,7 @@ rddot(sim::Sim, hist::History,tInd::Int64) hist.qddot[1:3*sim.nb, tInd:tInd]
 
 p(sim::Sim, hist::History,tInd::Int64)         hist.q[3*sim.nb+1:end, tInd:tInd]
 pdot(sim::Sim, hist::History,tInd::Int64)   hist.qdot[3*sim.nb+1:end, tInd:tInd]
-pdot(sim::Sim, hist::History,tInd::Int64)  hist.qddot[3*sim.nb+1:end, tInd:tInd]
+pddot(sim::Sim, hist::History,tInd::Int64)  hist.qddot[3*sim.nb+1:end, tInd:tInd]
 
 getλk(sim::Sim, hist::History,tInd::Int64)   hist.λk[: , tInd:tInd]
 getλp(sim::Sim, hist::History,tInd::Int64)   hist.λP[: , tInd:tInd]
