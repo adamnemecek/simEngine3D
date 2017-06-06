@@ -1,0 +1,17 @@
+#pendulum unity project folders to ignore
+benchmarks/pendulum/unitySim/pendulumSimulation/Library
+benchmarks/pendulum/unitySim/pendulumSimulation/projectSettings
+
+
+#file formats
+*.info
+*.asset
+*.prefs
+*.meta
+*.csv
+*.unity
+*.meta
+*.mat
+*.fbx
+*.csproj
+*.sln

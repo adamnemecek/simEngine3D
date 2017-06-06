@@ -18,7 +18,7 @@ function plot2DKinematics(bodyID,hist)
   z = [pos[3:3,:] ; vel[3:3,:] ; acc[3:3,:]]'
 
 #setup plot variables
-titles = ["body$(bodyID)position"  "velocity"  "acceleration"]
+titles = ["body$(bodyID) position"  "velocity"  "acceleration"]
 labels = ["x" "x" "x" "y" "y" "y" "z" "z" "z"]
 ylabels = ["m" "m/s" "m/s²"]
 xlabels = ["t" "t" "t"]
@@ -28,6 +28,12 @@ plot(t,[x y z], layout = (3,1), title = titles, label = labels)
 plot!(ylabel = ylabels)
 end
 
+"""function used for simulating results in unity"""
+function exportKinematicsToCSV(hist , path)
+  using DataFrames
+  kinematics = convert(DataFrame, hist.q)
+  writetable(path,kinematics)
+end
 
 
 # """plots the 3D path of a body specified by bodyID"""
