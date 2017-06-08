@@ -5,7 +5,7 @@ q,qdot,qddot and the reaction forces given the constraints and the externally ap
 forces
 """
 function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
-  if nDOF(sim) = 0
+  if nDOF(sim) == 0
     error("dynamic analysis should happen with degress of freedom present")
   end
 
@@ -25,11 +25,11 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     #update time
     sim.t = instant
 
-    if sim.t = tStart #save snapshot @ t = 0
-      snapshot(sim)
+    if tInd == 1 #save snapshot @ t = 0
+      snapShot(sim,hist,tInd)
     end
 
-    if tInd = 2  #use BDF of order to seed future solutions
+    if tInd == 2  #use BDF of order to seed future solutions
       BDF(sim,1,δt,tInd,hist)
     end
 
@@ -37,7 +37,7 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
       BDF(sim,2,δt,tInd,hist)
     end
     #store simulation state snapshot
-    snapShot(sim)
+      snapShot(sim,hist,tInd)
     tInd += 1
   end
 
@@ -62,7 +62,7 @@ function checkInitialConditions(sim::Sim, ϵ = .0001)
   buildνk(sim)
   buildɸk_r(sim)
   buildɸk_p(sim)
-  rdot = sim.q[1:3*sim.nb,1:1] ; pdot = sim.q[3*sim.nb + 1, 1:1]
+  rdot = sim.qdot[1:3*sim.nb,1:1] ; pdot = sim.qdot[3*sim.nb + 1:end, 1:1]
   ν₀ = sim.ɸk_r*rdot + sim.ɸk_p*pdot
   Verrors = ν₀ - sim.νk
   Ind = 0
@@ -75,14 +75,14 @@ function checkInitialConditions(sim::Sim, ϵ = .0001)
 
   #check euler parameter constraints
   buildP(sim)
-  pdot = sim.q[3*sim.nb + 1, 1:1]
-  Perror = sim.P*pdot
+  Perrors = sim.P*pdot
   Ind = 0
   for Perror in Perrors
     if abs(Perror) > ϵ
-      error("Euler papameter constraint $Ind is not consistant")
+      error("Euler parameter constraint $Ind is not consistant")
     end
     Ind += 1
+  end
 
 end
 
@@ -96,10 +96,10 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
   buildP(sim)
   buildJᵖ(sim)
   z21 = zeros(4*sim.nb,3*sim.nb)
-  z31 = zeros(sim.nb,sim.3nb)
+  z31 = zeros(sim.nb,3*sim.nb)
   z33 = zeros(sim.nb,sim.nb)
-  z44 = zeros(sim.nc,sim.nc)
-  z43 = zeros(sim.nc,sim.nb)
+  z44 = zeros(sim.nc_k,sim.nc_k)
+  z43 = zeros(sim.nc_k,sim.nb)
 
   LHS = [sim.M    z21'     z31'   sim.ɸk_r';
          z21      sim.Jᵖ   sim.P' sim.ɸk_p';
@@ -116,9 +116,9 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
 
   #solve for the level 2 compontents @ t0
   L2 = LHS \ RHS
-  sim.q =  L2[1:7*sim.nb, 1:1]
-  sim.λp = L2[(7*sim.nb + 1):(7*sim.nb + 1 + sim.nc_p), 1:1]
-  sim.λk = L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
+  sim.qddot =  L2[1:7*sim.nb, 1:1]
+  sim.λp    =  L2[(7*sim.nb + 1):(7*sim.nb + sim.nc_p), 1:1]
+  sim.λk    =  L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
 
   #build the reaction force vector for archiving in history
   buildFʳ(sim)
@@ -130,7 +130,7 @@ end
 solves for the system state information, at a single time step, by following The
 6 steps outlined in 10.19 slide 17, using the quazi newton ψ matrix
 """
-BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 slide 17
+function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 slide 17
   #interation constants
   mxInterations = 100;
   ϵ = 1e-2;
@@ -159,16 +159,16 @@ BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 sli
   #sim state variables remain unchanged from previous step
   #initialize constant matricies useful in construction of ψ
   z21 = zeros(4*sim.nb,3*sim.nb)
-  z31 = zeros(sim.nb,sim.3nb)
+  z31 = zeros(sim.nb,3*sim.nb)
   z33 = zeros(sim.nb,sim.nb)
-  z44 = zeros(sim.nc,sim.nc)
-  z43 = zeros(sim.nc,sim.nb)
+  z44 = zeros(sim.nc_k,sim.nc_k)
+  z43 = zeros(sim.nc_k,sim.nb)
 
   ν = 0;
-  while ν <mxInterations
+  while ν < mxInterations
     #step 1: compute the position and velocity using BDF and most recent qddot estimates
     rn  = Cʳ + β₀^2*δt^2*rddot(sim) ; rndot = Cʳdot + β₀*δt*rddot(sim)
-    pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; rndot = Cᵖdot + β₀*δt*pddot(sim)
+    pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; pndot = Cᵖdot + β₀*δt*pddot(sim)
     #update sim level vars with q and qddot estimates
     sim.q = [rn ; pn] ; sim.qdot = [rndot ; pndot]
 
@@ -215,12 +215,11 @@ BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 sli
   #step 6: accept, and perform step 1 to update q and qdot to most recent values
   #step 1: compute the position and velocity using BDF and most recent qddot estimates
   rn  = Cʳ + β₀^2*δt^2*rddot(sim) ; rndot = Cʳdot + β₀*δt*rddot(sim)
-  pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; rndot = Cᵖdot + β₀*δt*pddot(sim)
+  pn  = Cᵖ + β₀^2*δt^2*pddot(sim) ; pndot = Cᵖdot + β₀*δt*pddot(sim)
   #update sim level vars with q and qddot estimates
   sim.q = [rn ; pn] ; sim.qdot = [rndot ; pndot]
 
   #build the reaction force vector for archiving in history
   buildFʳ(sim)
   buildnbarʳ(sim)
-
-  end
+end

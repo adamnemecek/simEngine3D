@@ -19,7 +19,7 @@ function kinematicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
 
   #setup history
   hist = History(sim,tgrid)
-  tInd = 1;
+  tInd = 1
   #iterate through grid and solve equations
   for instant in tgrid
     #update time

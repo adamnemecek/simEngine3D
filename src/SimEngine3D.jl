@@ -9,6 +9,7 @@ include("./sim.jl")
 include("./body.jl")
 include("./TSDA.jl")
 #include("./RSDA.jl")
+include("./History.jl")
 #------------------------geometric Constraints----------------------------------
 #low level constraints
 include("./GCons/dp1.jl")
@@ -34,11 +35,11 @@ include("./GCons/ep.jl")
 include("./GCons/ground.jl")
 #-------------------------kinematics, dynamics, utilities-----------------------
 include("./kinematics.jl")
+include("./inverseDynamics.jl")
 include("./dynamics.jl")
 include("./utils.jl")
 
 #-------------------------plotting and exporting--------------------------------
-include("./History.jl")
 include("./plot.jl")
 
 #---------------------------public interface------------------------------------

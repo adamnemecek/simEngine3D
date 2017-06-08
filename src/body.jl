@@ -54,11 +54,11 @@ function A(bd::Body)
   """returns rotation matrix of the body, calculated from p"""
   return P2A(p(bd))
 end
-function G(bd::body)
+function G(bd::Body)
   """returns G matrix of a body, calculated from p"""
   return G(p(bd))
 end
-function Gdot(bd::body)
+function Gdot(bd::Body)
   """returns G matrix of a body, calculated from p"""
   return G(pdot(bd))
 end
