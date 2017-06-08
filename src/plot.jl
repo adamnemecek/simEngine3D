@@ -1,5 +1,6 @@
 #imports
   using Plots ; gr()
+  using DataFrames
 
 
 function plot2DKinematics(bodyID,hist)
@@ -17,20 +18,59 @@ function plot2DKinematics(bodyID,hist)
   y = [pos[2:2,:] ; vel[2:2,:] ; acc[2:2,:]]'
   z = [pos[3:3,:] ; vel[3:3,:] ; acc[3:3,:]]'
 
-#setup plot variables
-titles = ["body$(bodyID) position"  "velocity"  "acceleration"]
-labels = ["x" "x" "x" "y" "y" "y" "z" "z" "z"]
-ylabels = ["m" "m/s" "m/s²"]
-xlabels = ["t" "t" "t"]
+  #setup plot variables
+  titles = ["body$(bodyID) position"  "velocity"  "acceleration"]
+  labels = ["x" "x" "x" "y" "y" "y" "z" "z" "z"]
+  ylabels = ["m" "m/s" "m/s²"]
+  xlabels = ["t" "t" "t"]
 
-#execute plot
-plot(t,[x y z], layout = (3,1), title = titles, label = labels)
-plot!(ylabel = ylabels)
+  #execute plot
+  plot(t,[x y z], layout = (3,1), title = titles, label = labels)
+  plot!(ylabel = ylabels)
 end
+
+
+function plotReactionTorque(bodyID,hist)
+  """
+  plots the reaction torque vs time for the bodies requested via their ID Number
+  """
+  #get time and torque from history
+  t = hist.t
+  ni = hist.nbarʳ[3*(bodyID-1)+1:3*bodyID , :]
+
+  #setup plot variables
+  titles = "torque on body $(bodyID)"
+  labels = ["nx" "ny" "nz"]
+  ylabels = "n*m"
+  xlabels = "t"
+
+  #execute plot
+  plot(t, ni', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+
+end
+
+function plotVelocityViolations(bodyID,hist)
+  """
+  plots the reaction torque vs time for the bodies requested via their ID Number
+  """
+  #get time and torque from history
+  t = hist.t
+  vError = hist.νerror[1:1 , :]
+
+  #setup plot variables
+  titles = "vError of system"
+  labels = "vError"
+  ylabels = "(m/s)^2"
+  xlabels = "t"
+
+  #execute plot
+  plot(t, vError', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+end
+
+
 
 """function used for simulating results in unity"""
 function exportKinematicsToCSV(hist , path)
-  using DataFrames
   kinematics = convert(DataFrame, hist.q)
   writetable(path,kinematics)
 end
