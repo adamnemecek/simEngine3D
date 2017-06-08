@@ -6,18 +6,30 @@ public class kinematics : MonoBehaviour
     public TextAsset csv; //attach the q data csv manually
     public string[,] txt_q; //output of split csvGrid
     public float[,] q;
+
+    //system state variables (used by functions)
+    public int nb;
+    private int frameNum;
+
     // Use this for initialization
     void Start()  //could use awake? 
     {
         txt_q = CSVReader.SplitCsvGrid(csv.text);
         q = str2floatArray(txt_q);
-        //Debug.Log(txt_q.GetUpperBound(0));
-        //Debug.Log(txt_q.GetUpperBound(1));
-        //CSVReader.DebugOutputGrid(CSVReader.SplitCsvGrid(csv.text));
-        Debug.Log(q[2, 0]);
 
+        //system state info
+        nb = 2; //this must be manually updated for every simulation
+        frameNum = 0;
 
+    }
 
+    void FixedUpdate()
+    {
+        frameNum += 1;
+        if (frameNum > q.GetUpperBound(1) - 1) //roll over animation
+        {
+            frameNum = 0;
+        }
     }
 
 
@@ -42,7 +54,7 @@ public class kinematics : MonoBehaviour
     }
 
     //returns the position vector (rx,ry,rz) of the specified body, at the specified frame
-    public Vector3 r(int bodyID, int frameNum)
+    public Vector3 r(int bodyID)
     {
         Vector3 pos = new Vector3(q[3 * (bodyID - 1) + 1, frameNum],
                                   q[3 * (bodyID - 1) + 2, frameNum],
@@ -57,14 +69,14 @@ public class kinematics : MonoBehaviour
     //       nb - number of bodies in the system
     //       bodyID - IDnumber of requested body
     //       frameNum - frame number to write
-    public Vector4 p(int nb, int bodyID, int frameNum)
+    public Quaternion p(int bodyID)
     {
         //vector4 = [e1 e2 e3 e0] 
         int rDOFs = 3 * nb;
-        Vector4 ep = new Vector4(q[rDOFs + 4 * (bodyID - 1) + 2, frameNum],
-                                 q[rDOFs + 4 * (bodyID - 1) + 3, frameNum],
-                                 q[rDOFs + 4 * (bodyID - 1) + 4, frameNum],
-                                 q[rDOFs + 4 * (bodyID - 1) + 1, frameNum]);
+       Quaternion ep = new Quaternion(q[rDOFs + 4 * (bodyID - 1) + 2, frameNum],
+                                      q[rDOFs + 4 * (bodyID - 1) + 3, frameNum],
+                                      q[rDOFs + 4 * (bodyID - 1) + 4, frameNum],
+                                      q[rDOFs + 4 * (bodyID - 1) + 1, frameNum]);
         return ep;
     }
 
