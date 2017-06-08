@@ -29,7 +29,7 @@ end
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
 aBari(con::dp1) = pt(con.bodyi,con.Qi) - pt(con.bodyi,con.Pi) #[3x1]
-aBarj(con::dp1) = pt(con.bodyi,con.Qj) - pt(con.bodyi,con.Pj) #[3x1]
+aBarj(con::dp1) = pt(con.bodyj,con.Qj) - pt(con.bodyj,con.Pj) #[3x1]
 
 
 function ϕ(con::dp1)   #9.26.2016 - slide 11
