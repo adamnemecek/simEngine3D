@@ -70,8 +70,41 @@ end
 
 
 """function used for simulating results in unity"""
-function exportKinematicsToCSV(hist , path)
-  kinematics = convert(DataFrame, hist.q)
+function exportKinematicsToCSV(hist , path, A = eye(3))
+  #perform any principle rotations required to get q from our default coordinates
+  # (z-up, gravity is negative z) into coordinates for unity
+
+
+  q = copy(hist.q)
+  r = q[1:3*hist.nb, :]
+  p = q[3*hist.nb+1:end, :]
+  if A != eye(3)  #we need to perform a rotation to get things to look right in unit
+
+    #rotate position vectors
+    for bID in 1:hist.nb
+      for instant in 1:size(q)[2]
+        r[3*(bID-1)+1:3*bID , instant:instant] = A*r[3*(bID-1)+1:3*bID , instant:instant]
+      end
+    end
+
+    #rotate orientation vecotrs
+    for bID in 1:hist.nb
+      for instant in 1:size(q)[2]
+        p[4*(bID-1)+1:4*bID , instant:instant] = A2P(A*P2A(p[4*(bID-1)+1:4*bID , instant:instant]))
+      end
+    end
+  end
+  #put q back together again
+  q = [r;p]
+  #clean up really small entries, idk how well small numbers are parsed
+  for row in 1:size(q)[1]
+    for col in 1:size(q)[2]
+      if abs(q[row,col]) < .00001
+        q[row,col] = 0;
+      end
+    end
+  end
+  kinematics = convert(DataFrame, q)
   writetable(path,kinematics)
 end
 
