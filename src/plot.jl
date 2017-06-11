@@ -84,6 +84,21 @@ function exportKinematicsToCSV(hist , path)
   writetable(path,kinematics)
 end
 
+"""function used for simulating results in unity"""
+function exportKinematicsToCSV(hist , path, A = eye(3))
+  q = copy(hist.q)
+  #clean up really small entries, idk how well small numbers are parsed
+  for row in 1:size(q)[1]
+    for col in 1:size(q)[2]
+      if abs(q[row,col]) < .00001
+        q[row,col] = 0;
+      end
+    end
+  end
+  kinematics = convert(DataFrame, q)
+  writetable(path,kinematics)
+end
+
 
 # """plots the 3D path of a body specified by bodyID"""
 # function plot3DKinematics(bodyID,history)

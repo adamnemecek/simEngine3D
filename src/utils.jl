@@ -38,6 +38,31 @@ function A2P(A::Array) #9.21 slide 20
     e2 = (A[1,3] - A[3,1])/(4*e0)
     e3 = (A[2,1] - A[1,2])/(4*e0)
   end
+
+  if e0 == 0  #implies Χ = π
+    #figure out which e terms are non-zero
+    e1flag = false; e2flag = false; e3flag = false;
+    if A[1,1] + 1 =! 0  e1flag = true end
+    if A[2,2] + 1 =! 0  e2flag = true end
+    if A[3,3] + 1 =! 0  e3flag = true end
+
+    if e1flag
+      e1 = sqrt((A[1,1] + 1)/2)
+      e2 = (A[2,1] + A[1,2])/(4*e1)
+      e3 = (A[3,1] + A[1,3])/(4*e1)
+    elseif e2flag
+      e2 = sqrt((A[2,2] + 1)/2)
+      e1 = (A[2,1] + A[1,2])/(4*e2)
+      e3 = (A[3,2] + A[2,3])/(4*e2)
+    elseif e3flag
+      e3 = sqrt((A[3,3] + 1)/2)
+      e1 = (A[3,1] + A[1,3])/(4*e3)
+      e2 = (A[3,2] + A[2,3])/(4*e3)
+    else
+      warn("something is wrong with A value  $A ")
+    end
+  end
+
   p = [e0 e1 e2 e3]'
 end
 

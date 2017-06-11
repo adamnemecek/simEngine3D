@@ -1,6 +1,8 @@
 #pendulum unity project folders to ignore
-benchmarks/pendulum/unitySim/pendulumSimulation/Library
-benchmarks/pendulum/unitySim/pendulumSimulation/projectSettings
+benchmarks/unitySim/Library
+benchmarks/unitySim/projectSettings
+benchmarks/unitySim/Temp
+
 
 
 #file formats
