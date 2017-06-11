@@ -63,6 +63,11 @@ function Gdot(bd::Body)
   return G(pdot(bd))
 end
 
+"""take a 3x1 ωbar and a body and returns global pdot (for setting up IC's)"""
+function ωbar2pdot(bd::Body, ω::Array)
+  pdot = .5*G(bd)'*ω
+end
+
 
 #----------------------pseudo setter methods------------------------------------
 function set_r!(bd::Body, r::Array)

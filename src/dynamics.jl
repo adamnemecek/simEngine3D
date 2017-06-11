@@ -6,7 +6,7 @@ forces
 """
 function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
   if nDOF(sim) == 0
-    error("dynamic analysis should happen with degress of freedom present")
+    warn("dynamic analysis should happen with degress of freedom present")
   end
 
   #make sure level zero and level one constraints are consistent
@@ -43,6 +43,74 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
 
   return hist
 end
+
+"""determine a set of velocities that are consistant with the L1 constraint equations
+and a small set of manually specified velocities"""
+function setInitialVelocities(sim::Sim)
+  #manually determining a consistant set of velocities can be difficult, and there
+  #are frequently an infinite set of solutions. this function determines a set of velocities
+  #that minimizes the L2 norm of the velocity vector, and satisfies the vel constraints
+
+  #collect bodies with nonzero rdot's and pdots
+  rdotICbodies = Array{Any} #set of bodies with non-zero rdot's (by reference)
+  pdotICbodies = Array{Any} #set of bodies with non-zero rdot's (by reference)
+  for body in sim.bodies
+    if rdot(body) != [0 0 0]'
+        push!(rdotICbodies, body)
+    end
+    if pdot(body) != [0 0 0 0]'
+      push!(rdotICbodies, body)
+    end
+
+  #make simple constraint equations that require each specified velocity to take on it's specified value exactly
+  ICconstraints = zeros(0,7*sim.nb) #LHS of the constraint equations
+  b = zeros(0,1);  #RHS of constraint equations
+  for body in rdotICbodies
+    rdotConst = zeros(3,7*sim.nb);
+    rdotConst[:, 3*(body.ID - 1) + 1:3*bodyID] = eye(3)
+    #update rdot constraint equations
+    ICconstraints = [ICconstraints ; rdotConst]
+    b = [b ; rdot(body)]
+  end
+
+  for body in pdotICbodies
+    pdotConst = zeros(4,7*sim.nb);
+    pdotConst[:, 4*(body.ID - 1) + 1:4*bodyID] = eye(4)
+    #update pdot constraint equations
+    ICconstraints = [ICconstraints ; pdotConst]
+    b = [b ; pdot(body)]
+
+  end
+
+  #build sim level matricies using initial r and p
+  buildɸF(sim)
+  buildɸk_r(sim)
+  buildɸk_p(sim)
+  buildP(sim)
+  bulidνk(sim)
+
+  #formulate the linear system which is likely underconstrainted
+  z = zeros(sim.nb, 3*sim.nb) ; zp = zeros(sim.nb,1)
+  LHS = [sim.ɸk_r   sim.ɸk_p ;
+            z       sim.P    ;
+            ICconstraints    ]
+  RHS = [sim.νk ; zp ; b]
+
+  #check at this point that the rank of LHS does not exceed  7nb
+  if rank(LHS) > 7*sim.nb
+    error("too many velocities prescribed, the system is over constrained")
+  end
+
+  #use SVD to find the right pseudoInverse
+  V,Σ,U = svd(LHS)
+  Jplus = V*(Σ'(Σ*Σ')^-1)*U'
+
+  #solve for one of an infinite number of solutions for velocities
+  sim.qdot = Jplus * RHS   #solution minimizes L2 norm of velocity vector
+
+end
+
+
 
 
 """make sure that the supplied initial conditions are satified at levels zero and on"""

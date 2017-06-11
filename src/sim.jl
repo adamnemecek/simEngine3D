@@ -97,7 +97,7 @@ end
 function addGround!(sim::Sim)
   gnd = Body(sim,1)
   addBody!(sim,gnd)
-  addPoint(gnd , [1 0 0]') #need a point to form rotational constraints
+  addPoint(gnd , [0 0 1]') #need a point to form rotational constraints
   con = ground(sim,gnd,2)
   addConstraint!(sim,con)
 end
@@ -286,7 +286,7 @@ end
 function buildJᵖ(sim::Sim)    #10.5  slide 27
   for body in sim.bodies
     Ind = 4*(body.ID - 1) + 1
-    jᵖ = 4*G(body)'*body.j*G(body)
+    jᵖ = 4*G(body)'*body.J*G(body)
     insertUL!(sim.Jᵖ, jᵖ, (Ind, Ind))
   end
 end
@@ -295,7 +295,7 @@ end
 function buildP(sim::Sim)    #10.5  slide 27
   for body in sim.bodies
     rInd = body.ID ; cInd = 4*(body.ID - 1) + 1
-    insertUL!(sim.P, p(body), (rInd, cInd))
+    insertUL!(sim.P, p(body)', (rInd, cInd))
   end
 end
 
@@ -311,7 +311,7 @@ end
 """system applied forces vector F = Fᵐ + Fᵃ"""
 function buildF(sim::Sim)    #10.5  slide 27
   sim.Fᵃ = zeros(3*sim.nb,1)
-  for sda in sdas
+  for sda in sim.sdas
     if isa(sda,TSDA)
       #add forces on body i to Fᵃ
       sim.Fᵃ[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += Fi(sda)
@@ -325,7 +325,7 @@ end
 """build nbar from sdas """
 function buildnbar(sim::Sim)
   sim.nbar = zeros(3*sim.nb,1)
-  for sda in sdas #remember, there can be multiple sda's per body
+  for sda in sim.sdas #remember, there can be multiple sda's per body
     #add torques on bodyi to nbar
     nbar[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += nbari(sda)
     #add torques on bodyj to nbar
@@ -336,17 +336,17 @@ end
 
 """system applied torques vector"""
 function buildτh(sim::Sim)    #10.5  slide 27
-  buildnbar();
+  buildnbar(sim);
   #build τh from nbar and Ji
   for body in sim.bodies
     nbari = sim.nbar[3*(body.ID - 1) + 1:3*body.ID, 1:1]
-    sim.τh[4(body.ID-1)+1:4*body.ID,1:1] = 2*G(body)'*nbari + 8*Gdot(body)'*body.J*Gdot(body)*p(body)
+    sim.τh[4*(body.ID-1)+1:4*body.ID,1:1] = 2*G(body)'*nbari + 8*Gdot(body)'*body.J*Gdot(body)*p(body)
   end
 end
 
 """vector of the reaction forces"""
 function buildFʳ(sim::Sim)
-  sim.Fʳ = sim.ɸk_r'*sim.λk
+  sim.Fʳ = -sim.ɸk_r'*sim.λk
 end
 
 """vector of reaction torques"""
@@ -355,7 +355,7 @@ function buildnbarʳ(sim::Sim) #10.5 slide 26 , inverted
   τhʳ = -sim.ɸk_p'*sim.λk
   #convert from euler parameter representation to ω
   for body in sim.bodies
-    nbarʳi = .5*G(body)*τhʳ[4(body.ID-1)+1:4*body.ID,1:1]
+    nbarʳi = .5*G(body)*τhʳ[4*(body.ID-1)+1:4*body.ID,1:1]
     sim.nbarʳ[3*(body.ID - 1) + 1:3*body.ID, 1:1] = nbarʳi
   end
 end
@@ -363,10 +363,10 @@ end
 #---------------------------calculated states-----------------------------------
 nDOF(sim::Sim) = sim.nb*7 - sim.nc
 
-r(sim::Sim)         sim.q[1:3*sim.nb, 1:1]
-rdot(sim::Sim)   sim.qdot[1:3*sim.nb, 1:1]
-rddot(sim::Sim) sim.qddot[1:3*sim.nb, 1:1]
+r(sim::Sim)     =     sim.q[1:3*sim.nb, 1:1]
+rdot(sim::Sim)  =  sim.qdot[1:3*sim.nb, 1:1]
+rddot(sim::Sim) =  sim.qddot[1:3*sim.nb, 1:1]
 
-p(sim::Sim)         sim.q[3*sim.nb+1:end, 1:1]
-pdot(sim::Sim)   sim.qdot[3*sim.nb+1:end, 1:1]
-pddot(sim::Sim)  sim.qddot[3*sim.nb+1:end, 1:1]
+p(sim::Sim)     =     sim.q[3*sim.nb+1:end, 1:1]
+pdot(sim::Sim)  =  sim.qdot[3*sim.nb+1:end, 1:1]
+pddot(sim::Sim) = sim.qddot[3*sim.nb+1:end, 1:1]
