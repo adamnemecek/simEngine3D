@@ -61,6 +61,7 @@ function setInitialVelocities(sim::Sim)
     if pdot(body) != [0 0 0 0]'
       push!(rdotICbodies, body)
     end
+  end
 
   #make simple constraint equations that require each specified velocity to take on it's specified value exactly
   ICconstraints = zeros(0,7*sim.nb) #LHS of the constraint equations
@@ -79,7 +80,6 @@ function setInitialVelocities(sim::Sim)
     #update pdot constraint equations
     ICconstraints = [ICconstraints ; pdotConst]
     b = [b ; pdot(body)]
-
   end
 
   #build sim level matricies using initial r and p
