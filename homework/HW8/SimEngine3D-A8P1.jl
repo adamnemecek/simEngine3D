@@ -40,36 +40,67 @@ pendulum = SE3D.Body(sim,2,mass,J)
 #add to simulation in initial configuration
 SE3D.addBody!(sim, pendulum, r, p)
 
-#add points to bodies to use for kinematic constraints (see 9.26 - slide 32)
-#i is ground, j is pendulum
-Pi = [0 0 0]'  #this is the default point
-Qj = [-L 0 0]' #Pi and Qj are the points which are coincident in the sphirical joint
-ai_head = [0 0 -1]'  #ai and bi vectors define the yz plane of body i (ground)
-bi_head = [0 1 0]'
-cj_head = [0 0 1]'  #vector defining the axis of rotation in the LRF of bodyj
-bodyj_x = [1 0 0]'
-#SE3D.addPoint(sim.bodies[1] , Pi)
-SE3D.addPoint(sim.bodies[1] , ai_head) #index 3
-SE3D.addPoint(sim.bodies[1] , bi_head) #index 4
-SE3D.addPoint(sim.bodies[2] , Qj)      #index 2
-SE3D.addPoint(sim.bodies[2] , cj_head) #index 3
-SE3D.addPoint(sim.bodies[2] , bodyj_x) #index 4
+#flag for if there is a DOF or not
+DOF = 1
 
-#hardcode the indecies
-PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3 ; bodyj_xID = 4
-#add kinematic constraints
-rev = SE3D.rj(sim,sim.bodies[1],sim.bodies[2],PiID,QjID,ai_headID,bi_headID,cj_headID)
-SE3D.addConstraint!(sim,rev)
+if DOF == 1
+  #add points to bodies to use for kinematic constraints (see 9.26 - slide 32)
+  #i is ground, j is pendulum
+  Pi = [0 0 0]'  #this is the default point
+  Qj = [-L 0 0]' #Pi and Qj are the points which are coincident in the sphirical joint
+  ai_head = [0 0 -1]'  #ai and bi vectors define the yz plane of body i (ground)
+  bi_head = [0 1 0]'
+  cj_head = [0 0 1]'  #vector defining the axis of rotation in the LRF of bodyj
 
-#add driving constraint using dp1 to specify pendulum angle
-# f(t) = cos((pi*cos(2*t))/4 - pi/2)
-# fdot(t) = ((pi*sin(2*t)*sin((pi*cos(2*t))/4 - pi/2))/2)
-# fddot(t) =(pi*cos(2*t)*sin((pi*cos(2*t))/4 - pi/2) - (pi^2*sin(2*t)^2*cos((pi*cos(2*t))/4 - pi/2))/4)
-# # f(t) = cos((pi/4)*cos(2*t))
-# # fdot(t) = ((pi/2)*sin(2*t)*sin((pi/4)*cos(2*t)))
-# # fddot(t) = pi*cos(2*t)sin((pi/4)cos(2t)) - (((pi^2)/4)*(sin(2t))^2*cos((pi/4)cos(2t)))
-# drive = SE3D.dp1(sim,sim.bodies[1],sim.bodies[2],bi_headID,bodyj_xID,1,1,f,fdot,fddot )
-# SE3D.addConstraint!(sim,drive)
+  #SE3D.addPoint(sim.bodies[1] , Pi)
+  SE3D.addPoint(sim.bodies[1] , ai_head) #index 3
+  SE3D.addPoint(sim.bodies[1] , bi_head) #index 4
+  SE3D.addPoint(sim.bodies[2] , Qj)      #index 2
+  SE3D.addPoint(sim.bodies[2] , cj_head) #index 3
+  SE3D.addPoint(sim.bodies[2] , bodyj_x) #index 4
+
+  #hardcode the indecies
+  PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3 ; bodyj_xID = 4
+  #add kinematic constraints
+  rev = SE3D.rj(sim,sim.bodies[1],sim.bodies[2],PiID,QjID,ai_headID,bi_headID,cj_headID)
+  SE3D.addConstraint!(sim,rev)
+
+
+end
+
+#as written, the homework has 0DOF's but seeing both was interesting
+if DOF == 0
+  #add points to bodies to use for kinematic constraints (see 9.26 - slide 32)
+  #i is ground, j is pendulum
+  Pi = [0 0 0]'  #this is the default point
+  Qj = [-L 0 0]' #Pi and Qj are the points which are coincident in the sphirical joint
+  ai_head = [0 1 0]'  #ai and bi vectors define the yz plane of body i (ground)
+  bi_head = [0 0 -1]'
+  cj_head = [0 0 1]'  #vector defining the axis of rotation in the LRF of bodyj
+  bodyj_x = [1 0 0]'  #used for definition of the dot product
+  #SE3D.addPoint(sim.bodies[1] , Pi)
+  SE3D.addPoint(sim.bodies[1] , ai_head) #index 3
+  SE3D.addPoint(sim.bodies[1] , bi_head) #index 4
+  SE3D.addPoint(sim.bodies[2] , Qj)      #index 2
+  SE3D.addPoint(sim.bodies[2] , cj_head) #index 3
+  SE3D.addPoint(sim.bodies[2] , bodyj_x) #index 4
+
+  #hardcode the indecies
+  PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3 ; bodyj_xID = 4
+  #add kinematic constraints
+  rev = SE3D.rj(sim,sim.bodies[1],sim.bodies[2],PiID,QjID,ai_headID,bi_headID,cj_headID)
+  SE3D.addConstraint!(sim,rev)
+
+  #add driving constraint using dp1 to specify pendulum angle
+  f(t) = cos((pi*cos(2*t))/4 - pi/2)
+  fdot(t) = ((pi*sin(2*t)*sin((pi*cos(2*t))/4 - pi/2))/2)
+  fddot(t) =(pi*cos(2*t)*sin((pi*cos(2*t))/4 - pi/2) - (pi^2*sin(2*t)^2*cos((pi*cos(2*t))/4 - pi/2))/4)
+  # f(t) = cos((pi/4)*cos(2*t))
+  # fdot(t) = ((pi/2)*sin(2*t)*sin((pi/4)*cos(2*t)))
+  # fddot(t) = pi*cos(2*t)sin((pi/4)cos(2t)) - (((pi^2)/4)*(sin(2t))^2*cos((pi/4)cos(2t)))
+  drive = SE3D.dp1(sim,sim.bodies[1],sim.bodies[2],ai_headID,bodyj_xID,1,1,f,fdot,fddot )
+  SE3D.addConstraint!(sim,drive)
+end
 
 #initialize simulation
 SE3D.initForAnalysis(sim)
@@ -79,7 +110,9 @@ tstart = 0
 tstop = 10
 δt = .01
 
+tic()
 #hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
+toc()
 
 #plot
 penID = 2 #body 2

@@ -1,25 +1,21 @@
-# ME 751 HW 8 problem 2
+# ME 751 SimEngine3D benchmark - 4 bar linkage
 #Alex Dawson-Elli
 
-#problem  2 - perform a 10 seconds of Dynamic analysis of a double pendulum using QN
-# and plot:
-#     -kinematics of body2, kinematics of body 3
-#     -norm 2 of the velocity constraint violations
-#report the execution time
+#simulate the 4 bar linkage, and plot the displacement of B0
 
 #includes
-include("../../src/SimEngine3D.jl")
+include("../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
 
 #define the simulation
-sim = SE3D.Sim(3)
+sim = SE3D.Sim(4)
 
 #add the ground body in the simulation as body 1
-SE3D.addGround!(sim)
+SE3D.addGround!(sim) #g is in -z
 
-#------------define the first pendulum object and add to system-----------------
+#----------------------define link1 and add to system---------------------------
 #initial kinematics
-L = 2  #half the length of the pendulum
+L =.5  #half the length of the pendulum
 theta = pi/2 #initial configuration
 rot = SE3D.Ry(pi/2)*SE3D.Rz(theta) #account for pi/2 rotation
 p = SE3D.A2P(rot)

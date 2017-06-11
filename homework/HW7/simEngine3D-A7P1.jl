@@ -75,8 +75,9 @@ tstart = 0
 tstop = 10
 δt = .01
 
-
+tic()
 hist = SE3D.InverseDynamicsAnalysis(sim,tstart,tstop,δt)
+toc()
 
 #plot
 penID = 2 #body 2
