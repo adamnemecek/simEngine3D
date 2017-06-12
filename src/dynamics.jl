@@ -52,8 +52,8 @@ function setInitialVelocities(sim::Sim)
   #that minimizes the L2 norm of the velocity vector, and satisfies the vel constraints
 
   #collect bodies with nonzero rdot's and pdots
-  rdotICbodies = Array{Any} #set of bodies with non-zero rdot's (by reference)
-  pdotICbodies = Array{Any} #set of bodies with non-zero rdot's (by reference)
+  rdotICbodies = Array{Any}(0) #set of bodies with non-zero rdot's (by reference)
+  pdotICbodies = Array{Any}(0) #set of bodies with non-zero rdot's (by reference)
   for body in sim.bodies
     if rdot(body) != [0 0 0]'
         push!(rdotICbodies, body)
@@ -68,7 +68,7 @@ function setInitialVelocities(sim::Sim)
   b = zeros(0,1);  #RHS of constraint equations
   for body in rdotICbodies
     rdotConst = zeros(3,7*sim.nb);
-    rdotConst[:, 3*(body.ID - 1) + 1:3*bodyID] = eye(3)
+    rdotConst[:, 3*(body.ID - 1) + 1:3*body.ID] = eye(3)
     #update rdot constraint equations
     ICconstraints = [ICconstraints ; rdotConst]
     b = [b ; rdot(body)]
@@ -87,7 +87,7 @@ function setInitialVelocities(sim::Sim)
   buildɸk_r(sim)
   buildɸk_p(sim)
   buildP(sim)
-  bulidνk(sim)
+  buildνk(sim)
 
   #formulate the linear system which is likely underconstrainted
   z = zeros(sim.nb, 3*sim.nb) ; zp = zeros(sim.nb,1)
@@ -102,8 +102,9 @@ function setInitialVelocities(sim::Sim)
   end
 
   #use SVD to find the right pseudoInverse
-  V,Σ,U = svd(LHS)
-  Jplus = V*(Σ'(Σ*Σ')^-1)*U'
+  U,Σ,V = svd(LHS)
+  Σ = diagm(Σ)
+  Jplus = V*(Σ'*(Σ*Σ')^-1)*U'
 
   #solve for one of an infinite number of solutions for velocities
   sim.qdot = Jplus * RHS   #solution minimizes L2 norm of velocity vector

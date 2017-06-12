@@ -65,7 +65,7 @@ type Sim
     #make a blank simulation
     nb = nbodies; nc = 0 ; nc_k = 0 ; nc_p = 0 ; t= 0.0
     q = zeros(7*nb,1); qdot = zeros(7*nb,1); qddot = zeros(7*nb,1)
-    bodies = Array{Any}(0); cons =Array{Any}(0); pCons = Array{Any}(0); sdas = Array{Any}(0)
+    bodies = Array{Any}(0); cons = Array{Any}(0); pCons = Array{Any}(0); sdas = Array{Any}(0)
 
     new(nb,nc,nc_k,nc_p,t, q,qdot,qddot, bodies,cons,pCons,sdas)
 

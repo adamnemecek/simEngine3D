@@ -96,6 +96,7 @@ function exportKinematicsToCSV(hist , path, A = eye(3))
   #clean up really small entries, idk how well small numbers are parsed
   for row in 1:size(q)[1]
     for col in 1:size(q)[2]
+      q[row,col] = round(q[row,col] , 5)
       if abs(q[row,col]) < .00001
         q[row,col] = 0;
       end
