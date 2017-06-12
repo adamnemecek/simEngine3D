@@ -18,7 +18,6 @@ public class kinematics : MonoBehaviour
         q = str2floatArray(txt_q);
 
         //system state info
-        nb = 3; //this must be manually updated for every simulation
         frameNum = 0;
 
     }

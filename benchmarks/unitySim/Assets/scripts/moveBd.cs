@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
 
-public class moveBd2 : MonoBehaviour
-{
+public class moveBd : MonoBehaviour {
 
     public kinematics kin;  //access to kinematics
-    private int bodyID; //body id
-    void Start()
+    public int bodyID;      //body ID number
+    void Start ()  
     {
-        bodyID = 3;
+        
     }
 
     void FixedUpdate()
     {
-        Vector3 r = kin.r(bodyID);
+        Vector3    r = kin.r(bodyID);
         Quaternion p = kin.p(bodyID);
         transform.position = r;
         transform.rotation = p;

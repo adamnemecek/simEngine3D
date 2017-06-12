@@ -5,7 +5,7 @@
 #connected to ground, and plot the resulting kinematics for point o' and point o
 
 #includes
-include("../../src/SimEngine3D.jl")
+include("../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
 
 #define the simulation
@@ -67,13 +67,14 @@ tstart = 0
 tstop = 10
 δt = .01
 
-
+tic()
 hist = SE3D.kinematicsAnalysis(sim,tstart,tstop,δt)
+toc()
 
 #plot
 penID = 2 #body 2
 #SE3D.plot2DKinematics(penID,hist)
 
 #update data file for unity plot
-
-SE3D.exportKinematicsToCSV(hist, "data1")
+path = "./unitySim/Assets/data/pendulum/q_rot.csv"
+#SE3D.exportKinematicsToCSV(hist ,path , SE3D.Rx(-pi/2))
