@@ -79,30 +79,3 @@ function accelerationAnalysis(sim::Sim)
   build𝛾F(sim)
   sim.qddot = sim.ɸF_q \ sim.𝛾F
 end
-
-"""
-used to try and get systems out of a singularity (bricard system)
-"""
-function posJiggle(sim::Sim , ϵ = 1e-7 , maxIter = 1000) #9.29 S69
-  initial_q = sim.q ; ΔqNorm = 1; counter = 1
-  while  ΔqNorm  > ϵ
-    buildɸF(sim)
-    buildɸF_q(sim)
-
-    extraCon = zeros(1,7*sim.nb); extraCon[1,5] = 1;
-    RHS = [sim.ɸF ; r(sim.bodies[2])[2] + .5]
-    LHS = [sim.ɸF_q ; extraCon]
-    #sim.ɸF_q could be non-invertable
-    U,Σ,V = svd(LHS)
-    Σ = diagm(Σ)
-    Jplus = V*(Σ'*(Σ*Σ')^-1)*U'
-
-    Δq = Jplus * - RHS
-    sim.q += Δq
-     ΔqNorm = norm(Δq)
-    counter += 1
-    if counter > maxIter
-      error("failure to converge")
-    end
-  end
-end
