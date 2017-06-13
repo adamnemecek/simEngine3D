@@ -61,8 +61,8 @@ function InverseDynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001) #10.10 slide 
     sim.λk = sim.λF[1:sim.nc_k, 1:1]
     sim.λp = sim.λF[sim.nc_k+1:end, 1:1]
     #------------------step 3 - calculate reaction forces-----------------------
-    buildFʳ(sim)
-    buildnbarʳ(sim)
+    buildrForces(sim)
+    buildrTorques(sim)
 
     #store simulation state snapshot
     snapShot(sim,hist,tInd)

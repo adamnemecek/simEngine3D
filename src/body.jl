@@ -90,26 +90,6 @@ function set_pddot!(bd::Body , r::Array)
  bd.sim.qddot[3*bd.sim.nb+4(bd.ID-1)+1:3*bd.sim.nb+4*bd.ID , 1:1] = pddot
 end
 
-"""handles a request to add a point, and return the ID of a specified point"""
-function _addPoint(bd::Body, point::Array)
-  #check if point is already in bd.points, and return it's index
-  for pointID in 1:size(bd.pts)[2] #number of points in point matrix
-    if pt(bd,pointID) == point #point already exists in list
-      return pointID
-    end
-  end
-  #add point to array, return point index
-  addNewPoint(bd,point)
-  return size(bd.points)[2] #new point stored at end of array
-
-end
-
-
-"""adds a new point to a bodies' point matrix"""
-function addNewPoint(bd::Body, point::Array)
- bd.pts = [bd.pts point]
-end
-
 """adds a new point to a bodies' point matrix"""
 function addPoint(bd::Body, point::Array)
  bd.pts = [bd.pts point]

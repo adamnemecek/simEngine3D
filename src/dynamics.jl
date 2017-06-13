@@ -281,6 +281,7 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #
     end
     ν += 1
   end
+  if ν == 100 println("max iterations exceeded") end
   #step 6: accept, and perform step 1 to update q and qdot to most recent values
   #step 1: compute the position and velocity using BDF and most recent qddot estimates
   rn  = Cʳ + β₀^2*δt^2*rddot(sim) ; rndot = Cʳdot + β₀*δt*rddot(sim)

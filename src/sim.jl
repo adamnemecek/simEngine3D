@@ -55,8 +55,8 @@ type Sim
   τh::Array{Float64}        #[4nb x   1] vector of system applied torques from tsda or rsda
 
   #reaction forces and torques  10.5  slide 16
-  Fʳ::Array{Float64}        #[3nb x   1] vector of system reaction forces
-  nbarʳ::Array{Float64}     #[3nb x   1] vector of system reaction torques
+  rForces::Array{Float64}      #[3nb x   1] vector of system reaction forces
+  rTorques::Array{Float64}     #[3nb x   1] vector of system reaction torques
 
 
 
@@ -133,7 +133,7 @@ function initForAnalysis(sim::Sim)
   sim.λk   = zeros(sim.nc_k,1)       ;  sim.λp   = zeros(sim.nc_p,1)       ; sim.λF = zeros(sim.nc,1)
   sim.Fᵐ   = zeros(3*sim.nb,1)       ;  sim.Fᵃ   = zeros(3*sim.nb,1)       ; sim.F  = zeros(3*sim.nb,1)
   sim.nbar = zeros(3*sim.nb,1)       ;  sim.τh   = zeros(4*sim.nb,1)
-  sim.Fʳ   = zeros(3*sim.nb,1)       ;  sim.nbarʳ= zeros(3*sim.nb,1)
+  sim.rForces   = zeros(3*sim.nb,sim.nc_k)       ;  sim.rTorques= zeros(3*sim.nb,sim.nc_k)
 
   #set up static matricies used in ID and D
   buildM(sim)
@@ -322,7 +322,7 @@ function buildF(sim::Sim)    #10.5  slide 27
   sim.F = sim.Fᵐ + sim.Fᵃ
 end
 
-"""build nbar from sdas """
+"""build nbar from sdas, system applied torques (in local frame) """
 function buildnbar(sim::Sim)
   sim.nbar = zeros(3*sim.nb,1)
   for sda in sim.sdas #remember, there can be multiple sda's per body
@@ -332,7 +332,6 @@ function buildnbar(sim::Sim)
     nbar[3*(sda.bodyj.ID - 1) + 1:3*sda.bodyj.ID, 1:1] += nbari(sda)
   end
 end
-
 
 """system applied torques vector"""
 function buildτh(sim::Sim)    #10.5  slide 27
@@ -344,19 +343,29 @@ function buildτh(sim::Sim)    #10.5  slide 27
   end
 end
 
-"""vector of the reaction forces"""
-function buildFʳ(sim::Sim)
-  sim.Fʳ = -sim.ɸk_r'*sim.λk
+"""matrix of reaction forces acting on each body(rows) from each constraint(cols)"""
+function buildrForces(sim::Sim)
+  # to solve for net force per body: Fʳ = -sim.ɸk_r'*sim.λk
+  # instead, we want a matrix of the effect each λk has on each body
+  # net is calculated by summing every column for a given body
+  for (bdID, body) in enumerate(sim.bodies)
+    ɸk_ri = sim.ɸk_r[:,3*(bdID-1) + 1:3*bdID]
+    for (λID, λ) in enumerate(sim.λk)
+      sim.rForces[3*(bdID-1) + 1:3*bdID , λID:λID] = -ɸk_ri'[:,λID]*λ
+    end
+  end
 end
 
-"""vector of reaction torques"""
-function buildnbarʳ(sim::Sim) #10.5 slide 26 , inverted
-  τhʳ = zeros(4*sim.nb,1)
-  τhʳ = -sim.ɸk_p'*sim.λk
-  #convert from euler parameter representation to ω
-  for body in sim.bodies
-    nbarʳi = .5*G(body)*τhʳ[4*(body.ID-1)+1:4*body.ID,1:1]
-    sim.nbarʳ[3*(body.ID - 1) + 1:3*body.ID, 1:1] = nbarʳi
+"""matrix of reaction torques acting on each body(rows) from each constraint(cols)"""
+function buildrTorques(sim::Sim) #10.5 slide 26 , inverted
+  # to solve for net torque per body: τhʳ = -sim.ɸk_r'*sim.λk
+  # instead, we want a matrix of the effect each λk has on each body
+  # net is calculated by summing every column for a given body
+  for (bdID, body) in enumerate(sim.bodies)
+    ɸk_pi = sim.ɸk_p[:,4*(bdID-1) + 1:4*bdID]
+    for (λID, λ) in enumerate(sim.λk)
+      sim.rTorques[3*(bdID-1) + 1:3*bdID , λID:λID] = -.5*G(body)*ɸk_pi'[:,λID]*λ
+    end
   end
 end
 

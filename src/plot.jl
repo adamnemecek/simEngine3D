@@ -30,13 +30,14 @@ function plot2DKinematics(bodyID,hist)
 end
 
 
-function plotReactionTorque(bodyID,hist)
+function plotNetReactionTorque(bodyID, hist)
   """
   plots the reaction torque vs time for the bodies requested via their ID Number
   """
   #get time and torque from history
-  t = hist.t
-  ni = hist.nbarʳ[3*(bodyID-1)+1:3*bodyID , :]
+  t = hist.tgrid
+  nbar = nbarʳ(hist)
+  nibar = nbar[3*(bodyID-1)+1:3*bodyID , :]
 
   #setup plot variables
   titles = "torque on body $(bodyID)"
@@ -45,7 +46,26 @@ function plotReactionTorque(bodyID,hist)
   xlabels = "t"
 
   #execute plot
-  plot(t, ni', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+  plot(t, nibar', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+
+end
+
+function plotReactionTorque(bodyID, λID, hist)
+  """
+  plots the reaction torque vs time for the bodies requested via their ID Number
+  """
+  #get time and torque from history
+  t = hist.tgrid
+  nibar  = rTorque(hist, bodyID , λID)
+
+  #setup plot variables
+  titles = "torque on body $(bodyID) from constraint $(λID)"
+  labels = ["nx" "ny" "nz"]
+  ylabels = "n*m"
+  xlabels = "t"
+
+  #execute plot
+  plot(t, nibar', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
 
 end
 
@@ -105,25 +125,3 @@ function exportKinematicsToCSV(hist , path, A = eye(3))
   kinematics = convert(DataFrame, q)
   writetable(path,kinematics)
 end
-
-# """plots the 3D path of a body specified by bodyID"""
-# function plot3DKinematics(bodyID,history)
-#     # initialize the attractor
-#   n = 1500
-#   dt = 0.02
-#   σ, ρ, β = 10., 28., 8/3
-#   x, y, z = 1., 1., 1.
-#
-#   # initialize a 3D plot with 1 empty series
-#   plt = path3d(1, xlim=(-25,25), ylim=(-25,25), zlim=(0,50),
-#                   xlab = "x", ylab = "y", zlab = "z",
-#                   title = "Lorenz Attractor", marker = 1)
-#
-#   # build an animated gif, saving every 10th frame
-#   @gif for i=1:n
-#       dx = σ*(y - x)     ; x += dt * dx
-#       dy = x*(ρ - z) - y ; y += dt * dy
-#       dz = x*y - β*z     ; z += dt * dz
-#       push!(plt, x, y, z)
-#   end every 10
-# end

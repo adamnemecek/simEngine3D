@@ -102,6 +102,16 @@ function insertUL!(A, h , ind)
   A[x:x+row-1 ,y:y+col-1] = h
 end
 
+"""sum each element of a row and return the resulting column vector"""
+function rowSum(arr::Array)
+  result = zeros(size(arr)[1],1) #column vector
+  for row in 1:size(arr)[1]
+    for col in 1:size(arr)[2]
+      result[row,1] += arr[row,col]
+    end
+  end
+  return result
+end
 
 #---------------------setup functions-------------------------------------------
 """principle rotations are useful when setting up problems"""
