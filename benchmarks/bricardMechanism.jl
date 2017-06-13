@@ -242,12 +242,12 @@ SE3D.addPoint(sim.bodies[1] , cj_head) #index 6
 
 #hardcode the indecies
 PiID = 4; QjID = 5; ai_headID = 5; bi_headID = 6; cj_headID = 6
-#add kinematic constraints
-rj6 = SE3D.rj(sim,sim.bodies[6],sim.bodies[1],PiID,QjID,ai_headID,bi_headID,cj_headID)
-SE3D.addConstraint!(sim,rj6)
-
-
-
+#add kinematic constraints - could not get to work with rj!!!
+#rj6 = SE3D.sj(sim,sim.bodies[6],sim.bodies[1],PiID,QjID,ai_headID,bi_headID,cj_headID)
+sj6 =  SE3D.sj(sim,sim.bodies[6],sim.bodies[1],PiID,QjID)
+dp1 = SE3D.dp1(sim,sim.bodies[6],sim.bodies[1],bi_headID,cj_headID)
+SE3D.addConstraint!(sim,sj6)
+SE3D.addConstraint!(sim,dp1)
 
 #-----------------------initialize simulation-----------------------------------
 SE3D.initForAnalysis(sim)
@@ -255,10 +255,14 @@ SE3D.initForAnalysis(sim)
 #determine remainder of system velocities
 SE3D.setInitialVelocities(sim)
 
+#----------------------try to get out of this singularity!!---------------------
+#SE3D.positionAnalysis(sim) #9.29 S69
+
+
 #---------------------perform Dynamics Analysis---------------------------------
 tstart = 0
 tstop = 10
-δt = .001
+δt = .01
 
 tic()
 hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
@@ -266,6 +270,6 @@ toc()
 
 #------------------------------plot---------------------------------------------
 penID = 2 #body 2
-path = "./unitySim/Assets/data/fourBarLinkage/q_rot.csv"
+path = "./unitySim/Assets/data/bricardMechanism/q_rot.csv"
 #SE3D.plotReactionTorque(penID,hist)
 #SE3D.exportKinematicsToCSV(hist ,path , SE3D.Rx(-pi/2))
