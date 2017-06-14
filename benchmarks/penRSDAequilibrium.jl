@@ -1,9 +1,8 @@
-# ME 751 HW  - pendulum ID benchmark
+# ME 751 HW 6 problem 3
 #Alex Dawson-Elli
 
-#- perform a 10 second ID analysis of a simple pendulum
-#connected to ground, and plot the resulting kinematics 
-
+#find the equalibrium position of a spring mass rotational pendulum by waiting
+#for the system to damp out.
 #includes
 include("../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
@@ -49,15 +48,26 @@ PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3 ; bodyj_xID = 4
 rev = SE3D.rj(sim,sim.bodies[1],sim.bodies[2],PiID,QjID,ai_headID,bi_headID,cj_headID)
 SE3D.addConstraint!(sim,rev)
 
-#add driving constraint using dp1 to specify pendulum angle
-f(t) = cos((pi*cos(2*t))/4 - pi/2)
-fdot(t) = ((pi*sin(2*t)*sin((pi*cos(2*t))/4 - pi/2))/2)
-fddot(t) =(pi*cos(2*t)*sin((pi*cos(2*t))/4 - pi/2) - (pi^2*sin(2*t)^2*cos((pi*cos(2*t))/4 - pi/2))/4)
-# f(t) = cos((pi/4)*cos(2*t))
-# fdot(t) = ((pi/2)*sin(2*t)*sin((pi/4)*cos(2*t)))
-# fddot(t) = pi*cos(2*t)sin((pi/4)cos(2t)) - (((pi^2)/4)*(sin(2t))^2*cos((pi/4)cos(2t)))
-drive = SE3D.dp1(sim,sim.bodies[1],sim.bodies[2],bi_headID,bodyj_xID,1,1,f,fdot,fddot )
-SE3D.addConstraint!(sim,drive)
+#----------make a rotational Spring-Damper-Actuator and add to system-----------
+#points
+ai_head = [1 0 0]'
+aj_head = [0 0 -1]'
+bi_head = [0 1 0]'
+bj_head = [1 0 0]'
+
+SE3D.addPoint(sim.bodies[1] , ai_head) #index 5
+SE3D.addPoint(sim.bodies[1] , bi_head) #index 6
+SE3D.addPoint(sim.bodies[2] , aj_head) #index 5
+SE3D.addPoint(sim.bodies[2] , bj_head) #index 6
+
+
+#hardcode the indecies
+ai_headID = 5; aj_headID = 5; bi_headID = 6; bj_headID = 6;
+k = 2 ; c = 10 ; Θ₀ = -pi/4 ; h = 0
+
+#add RSDA element
+rsda1 = SE3D.RSDA(sim,sim.bodies[1],sim.bodies[2],ai_headID,aj_headID,bi_headID,bj_headID,k,Θ₀,c)
+SE3D.addSDA!(sim,rsda1)
 
 #initialize simulation
 SE3D.initForAnalysis(sim)
@@ -68,7 +78,7 @@ tstop = 10
 δt = .01
 
 tic()
-hist = SE3D.InverseDynamicsAnalysis(sim,tstart,tstop,δt)
+hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
 toc()
 
 #plot
@@ -76,5 +86,5 @@ penID = 2 #body 2
 #SE3D.plot2DKinematics(penID,hist)
 
 #update data file for unity plot
-path = "./unitySim/Assets/data/pendulum/q_rot.csv"
+path = "./unitySim/Assets/data/penRSDAequilibrium/q_rot.csv"
 #SE3D.exportKinematicsToCSV(hist ,path , SE3D.Rx(-pi/2))

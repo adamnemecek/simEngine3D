@@ -190,8 +190,8 @@ function findInitialL2conditions(sim::Sim) # 10.19 slide 16
   sim.λk    =  L2[(7*sim.nb + sim.nc_p + 1):end, 1:1]
 
   #build the reaction force vector for archiving in history
-  buildFʳ(sim)
-  buildnbarʳ(sim)
+  buildrForces(sim)
+  buildrTorques(sim)
 
 end
 
@@ -290,6 +290,6 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #
   sim.q = [rn ; pn] ; sim.qdot = [rndot ; pndot]
 
   #build the reaction force vector for archiving in history
-  buildFʳ(sim)
-  buildnbarʳ(sim)
+  buildrForces(sim)
+  buildrTorques(sim)
 end

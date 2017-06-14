@@ -68,6 +68,11 @@ function ωbar2pdot(bd::Body, ω::Array)
   pdot = .5*G(bd)'*ω
 end
 
+function E(bd::Body)
+  """returns G matrix of a body, calculated from p"""
+  return E(p(bd))
+end
+
 
 #----------------------pseudo setter methods------------------------------------
 function set_r!(bd::Body, r::Array)

@@ -8,7 +8,7 @@ module SimEngine3D
 include("./sim.jl")
 include("./body.jl")
 include("./TSDA.jl")
-#include("./RSDA.jl")
+include("./RSDA.jl")
 include("./History.jl")
 #------------------------geometric Constraints----------------------------------
 #low level constraints

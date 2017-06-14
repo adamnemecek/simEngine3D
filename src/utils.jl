@@ -20,6 +20,12 @@ function G(p::Array)
   G = [-e -tilde(e) + e0*eye(3)]
 end
 
+"""[3x4] matrix used for converting between EP and ω orientation representations"""
+function E(p::Array)
+  e0 = p[1] ; e = p[2:4]
+  G = [-e tilde(e) + e0*eye(3)]
+end
+
 """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
 function P2A(Pi::Array)   #kinematic key formulas
   e0 = Pi[1]

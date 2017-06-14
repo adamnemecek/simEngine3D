@@ -93,13 +93,10 @@ function addConstraint!(sim::Sim, con::Any) #inheritance could solve this
   sim.nc_k += con.rDOF
 end
 
-"""Ground is the first body added to the system, and is index 1"""
-function addGround!(sim::Sim)
-  gnd = Body(sim,1)
-  addBody!(sim,gnd)
-  addPoint(gnd , [0 0 1]') #need a point to form rotational constraints
-  con = ground(sim,gnd,2)
-  addConstraint!(sim,con)
+
+"""add a spring-damper-actuator object to the current simulation"""
+function addSDA!(sim::Sim, sda::Any)
+  push!(sim.sdas, sda)
 end
 
   """add euler parameter constraints to system"""
@@ -108,7 +105,15 @@ end
       push!(sim.pCons,ep(sim,body))
       sim.nc += 1; sim.nc_p += 1
     end
+  end
 
+  """Ground is the first body added to the system, and is index 1"""
+  function addGround!(sim::Sim)
+    gnd = Body(sim,1)
+    addBody!(sim,gnd)
+    addPoint(gnd , [0 0 1]') #need a point to form rotational constraints
+    con = ground(sim,gnd,2)
+    addConstraint!(sim,con)
   end
 
 """after finished adding bodies and constraints, run this"""
@@ -327,9 +332,9 @@ function buildnbar(sim::Sim)
   sim.nbar = zeros(3*sim.nb,1)
   for sda in sim.sdas #remember, there can be multiple sda's per body
     #add torques on bodyi to nbar
-    nbar[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += nbari(sda)
+    sim.nbar[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += nbari(sda)
     #add torques on bodyj to nbar
-    nbar[3*(sda.bodyj.ID - 1) + 1:3*sda.bodyj.ID, 1:1] += nbari(sda)
+    sim.nbar[3*(sda.bodyj.ID - 1) + 1:3*sda.bodyj.ID, 1:1] += nbarj(sda)
   end
 end
 
