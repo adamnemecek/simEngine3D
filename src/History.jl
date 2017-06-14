@@ -4,11 +4,13 @@ type History
   qdot::Array{Float64}    #[7nb x t]array of system generalized coordinates = [rdot;pdot]
   qddot::Array{Float64}   #[7nb x t]array of system generalized coordinates = [rdot;pdot]
   nb::Int64               #number of bodies in the system
-  #dynamics of interest
+  #dynamics
   rForces::Array{Float64}  #[3nb x nc_k x t] vector of system reaction forces
   rTorques::Array{Float64} #[3nb x nc_k x t]  vector of system reaction torques
-  νerror::Array{Float64}   #[1 x t]     vector of velocity constraint violations
+  Fᵃ::Array{Float64}       #[3nb x nc_k x t] vector of system reaction forces
+  nbarᵃ::Array{Float64}     #[3nb x nc_k x t] vector of system reaction forces
 
+  νerror::Array{Float64}   #[1 x t]     vector of velocity constraint violations
   tgrid::FloatRange{Float64}
 
   #constructor
@@ -21,10 +23,12 @@ type History
 
     rForces  = zeros(3*sim.nb, sim.nc_k, length(tgrid))
     rTorques = zeros(3*sim.nb, sim.nc_k, length(tgrid))
+    Fᵃ = zeros(3*sim.nb,length(tgrid))
+    nbarᵃ = zeros(3*sim.nb,length(tgrid))
 
     νerror = zeros(1,length(tgrid))
 
-    new(q,qdot,qddot,nb,rForces,rTorques,νerror,tgrid)
+    new(q,qdot,qddot,nb,rForces,rTorques,Fᵃ,nbarᵃ,νerror,tgrid)
   end
 end
 
@@ -36,6 +40,8 @@ function snapShot(sim::Sim,hist::History,tInd::Int64)
 
     hist.rForces[:,:,tInd] = sim.rForces
     hist.rTorques[:,:,tInd] = sim.rTorques
+    hist.Fᵃ[:,tInd] = sim.Fᵃ
+    hist.nbarᵃ[:,tInd] = sim.nbar
 
     hist.νerror[1,tInd] = νerror(sim)
 end

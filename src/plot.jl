@@ -8,7 +8,7 @@ function plot2DKinematics(bodyID,hist)
   plots the position vs time for the bodies requested via their ID Number
   """
     #get time , position, velocity, acceleration for specified body
-  t = hist.t
+  t = hist.tgrid
   pos = hist.q[3*(bodyID-1)+1:3*bodyID ,:]
   vel = hist.qdot[3*(bodyID-1)+1:3*bodyID ,:]
   acc = hist.qddot[3*(bodyID-1)+1:3*bodyID ,:]
@@ -69,12 +69,51 @@ function plotReactionTorque(bodyID, λID, hist)
 
 end
 
+
+function plotappliedTorque(bodyID, hist)
+  """
+  plots the reaction torque vs time for the bodies requested via their ID Number
+  """
+  #get time and torque from history
+  t = hist.tgrid
+  nibar  = hist.nbarᵃ[3*(bodyID-1)+1:3*bodyID , :]
+
+  #setup plot variables
+  titles = "torque on body $(bodyID) from RSDA's and TSDA's"
+  labels = ["nx" "ny" "nz"]
+  ylabels = "n*m"
+  xlabels = "t"
+
+  #execute plot
+  plot(t, nibar', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+
+end
+
+function plotappliedForce(bodyID, hist)
+  """
+  plots the reaction torque vs time for the bodies requested via their ID Number
+  """
+  #get time and force from history
+  t = hist.tgrid
+  Fi  = hist.Fᵃ[3*(bodyID-1)+1:3*bodyID , :]
+
+  #setup plot variables
+  titles = "forces applied to body by TSDA's"
+  labels = ["fx" "fy" "fz"]
+  ylabels = "n"
+  xlabels = "t"
+
+  #execute plot
+  plot(t, Fi', title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+
+end
+
 function plotVelocityViolations(bodyID,hist)
   """
   plots the reaction torque vs time for the bodies requested via their ID Number
   """
   #get time and torque from history
-  t = hist.t
+  t = hist.tgrid
   vError = hist.νerror[1:1 , :]
 
   #setup plot variables
