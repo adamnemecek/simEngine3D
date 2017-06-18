@@ -28,7 +28,7 @@ end
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
 aBari(con::dp2) = pt(con.bodyi,con.ai_head) - pt(con.bodyi,con.ai_tail) #[3x1]
-PiQj(con::dp2)  = dij(con.bodyi,cons.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
+PiQj(con::dp2)  = dij(con.bodyi,con.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
 
 function ϕ(con::dp2)   #9.26.2016 - slide 14
   """
@@ -68,7 +68,7 @@ function ϕ_r(con::dp2)  #9.28.2016 slide 15
   """
   phi_ri = -aBari(con)'*A(con.bodyi)'
   phi_rj = -phi_ri;
-  return phi_ri , ph_rj
+  return phi_ri , phi_rj
 end
 
 function ϕ_p(con::dp2)  # #9.28.2016 slide 15
@@ -76,12 +76,12 @@ function ϕ_p(con::dp2)  # #9.28.2016 slide 15
 partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
 output:([1x4],[1x4])
 """
-Sj = pt(con.bodyj,con.Qj) ; Si = pt(con.bodyi,con.Pi)  #these are bars
-ai = aBari(con)'*A(con.bodyi)
+Sibar = pt(con.bodyi,con.Pi) ; Sjbar = pt(con.bodyj,con.Qj)  #these are bars
+ai = A(con.bodyi)*aBari(con)
 Pj = p(con.bodyj) ; Pi = p(con.bodyi)
 
-phi_pi = PiQj(con)'*B(Pi,aiBar(con)) - ai'B(Pi,Si)
-phi_pj = ai'*B(Pj,Sj)
+phi_pi = PiQj(con)'*B(Pi,aBari(con)) - ai'*B(Pi,Sibar)
+phi_pj = ai'*B(Pj,Sjbar)
 
 return phi_pi , phi_pj
 end

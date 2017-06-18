@@ -62,8 +62,8 @@ function ϕ_r(con::cj)  #9.28.2016 slide 17
   output: ([4x3],[4x3])
   """
   phi_r = Array{Float64}(con.rDOF,6)
-  phi_p[1:2,1:3], phi_p[1:2,4:6] = ϕ_r(con.subGCs[1])
-  phi_p[3:4,1:3], phi_p[3:4,4:6] = ϕ_r(con.subGCs[2])
+  phi_r[1:2,1:3], phi_r[1:2,4:6] = ϕ_r(con.subGCs[1])
+  phi_r[3:4,1:3], phi_r[3:4,4:6] = ϕ_r(con.subGCs[2])
   return phi_r[:,1:3] , phi_r[:,4:6]
 end
 

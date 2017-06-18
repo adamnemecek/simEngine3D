@@ -18,7 +18,7 @@ type tj
   cj_head::Int  #index of cj_head
   cj_tail::Int  #index of cj_tail
   rDOF::Int     #number of degrees of freedom removed by constraint
-  subGCs::Array #consider using inhepitance here for speedup?
+  subGCs::Array #consider using inheritance here for speedup?
 
   #constructor function
   function tj(sim::Sim,bodyi::Body,bodyj::Body,Pi,Qj,ai_head,bi_head,aj_head,cj_head,ai_tail = 1,bi_tail = 1,aj_tail = 1,cj_tail = 1)
@@ -28,7 +28,7 @@ type tj
     subGCs[1] =  cj(sim,bodyi,bodyj,Pi,Qj,ai_head,bi_head,cj_head,ai_tail,bi_tail,cj_tail)
     subGCs[2] = dp1(sim,bodyi,bodyj,ai_head,aj_head,ai_tail,aj_tail)
 
-    new(sim,bodyi,bodyj,Pi,Qj,ai_head,ai_tail,bi_head,bi_tail,cj_head,cj_tail,rDOF,subGCs)
+    new(sim,bodyi,bodyj,Pi,Qj,ai_head,ai_tail,aj_head,aj_tail,bi_head,bi_tail,cj_head,cj_tail,rDOF,subGCs)
   end
 end
 
