@@ -64,8 +64,8 @@ function Gdot(bd::Body)
 end
 
 """take a 3x1 ωbar and a body and returns global pdot (for setting up IC's)"""
-function ωbar2pdot(bd::Body, ω::Array)
-  pdot = .5*G(bd)'*ω
+function ωbar2pdot(bd::Body, ωbar::Array)
+  pdot = .5*G(bd)'*ωbar
 end
 
 function E(bd::Body)
@@ -81,17 +81,17 @@ end
 function set_rdot!(bd::Body, rdot::Array)
  bd.sim.qdot[3*(bd.ID-1)+1:3*bd.ID , 1:1] = rdot
 end
-function set_rddot!(bd::Body , r::Array)
+function set_rddot!(bd::Body , rddot::Array)
  bd.sim.qddot[3*(bd.ID-1)+1:3*bd.ID , 1:1] = rddot
 end
 
 function set_p!(bd::Body , p::Array)
  bd.sim.q[3*bd.sim.nb+4(bd.ID-1)+1:3*bd.sim.nb+4*bd.ID , 1:1] = p
 end
-function set_pdot!(bd::Body, r::Array)
+function set_pdot!(bd::Body, pdot::Array)
  bd.sim.qdot[3*bd.sim.nb+4(bd.ID-1)+1:3*bd.sim.nb+4*bd.ID , 1:1] = pdot
 end
-function set_pddot!(bd::Body , r::Array)
+function set_pddot!(bd::Body , pddot::Array)
  bd.sim.qddot[3*bd.sim.nb+4(bd.ID-1)+1:3*bd.sim.nb+4*bd.ID , 1:1] = pddot
 end
 

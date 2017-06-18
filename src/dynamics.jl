@@ -59,7 +59,7 @@ function setInitialVelocities(sim::Sim)
         push!(rdotICbodies, body)
     end
     if pdot(body) != [0 0 0 0]'
-      push!(rdotICbodies, body)
+      push!(pdotICbodies, body)
     end
   end
 
@@ -76,7 +76,7 @@ function setInitialVelocities(sim::Sim)
 
   for body in pdotICbodies
     pdotConst = zeros(4,7*sim.nb);
-    pdotConst[:, 4*(body.ID - 1) + 1:4*bodyID] = eye(4)
+    pdotConst[:, 4*(body.ID - 1) + 1:4*body.ID] = eye(4)
     #update pdot constraint equations
     ICconstraints = [ICconstraints ; pdotConst]
     b = [b ; pdot(body)]
