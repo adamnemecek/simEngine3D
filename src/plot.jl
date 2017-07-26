@@ -29,6 +29,32 @@ function plot2DKinematics(bodyID,hist)
   plot!(ylabel = ylabels)
 end
 
+function plot2DKinematics(bodyID,hist,point)
+  """
+  plots the position vs time for a point on the body requested
+  **only position is currently implemented.**
+  """
+    #get time , position, velocity, acceleration for specified body
+  t = hist.tgrid
+  r = hist.q[3*(bodyID-1)+1:3*bodyID ,:]
+  p = hist.q[3*hist.nb+4(bodyID-1)+1:3*hist.nb+4*bodyID , :]
+  r_P = zeros(3,size(hist.tgrid)[1])  #point on body
+
+  #calcuate the local position
+  for instant in 1:size(hist.tgrid)[1]
+    r_P[:,instant] = r[:,instant] + P2A(p[:,instant])*point
+  end
+
+  #setup plot variables
+   title = "position of point $point on body$(bodyID)"
+   labels = ["x" "y" "z"]
+   ylabels = "m"
+   xlabels = "t"
+
+  #execute plot
+  plot(t, r_P', title = title, label = labels, ylabel = ylabels, xlabel = xlabels)
+end
+
 
 function plotNetReactionTorque(bodyID, hist)
   """
