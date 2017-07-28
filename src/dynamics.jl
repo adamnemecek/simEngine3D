@@ -63,24 +63,32 @@ function setInitialVelocities(sim::Sim)
     end
   end
 
-  #make simple constraint equations that require each specified velocity to take on it's specified value exactly
+  # #make simple constraint equations that require each specified velocity to take on it's specified value exactly
   ICconstraints = zeros(0,7*sim.nb) #LHS of the constraint equations
   b = zeros(0,1);  #RHS of constraint equations
+
   for body in rdotICbodies
-    rdotConst = zeros(3,7*sim.nb);
-    rdotConst[:, 3*(body.ID - 1) + 1:3*body.ID] = eye(3)
-    #update rdot constraint equations
-    ICconstraints = [ICconstraints ; rdotConst]
-    b = [b ; rdot(body)]
+    for (i,rdot_el) in enumerate(rdot(body))
+      if rdot_el != 0
+        rdotConst = zeros(1,7*sim.nb);
+        rdotConst[1, 3*(body.ID - 1) + i] = 1
+        b = [b ; rdot(body)[i]]
+        ICconstraints = [ICconstraints ; rdotConst]
+      end
+    end
   end
 
   for body in pdotICbodies
-    pdotConst = zeros(4,7*sim.nb);
-    pdotConst[:, 4*(body.ID - 1) + 1:4*body.ID] = eye(4)
-    #update pdot constraint equations
-    ICconstraints = [ICconstraints ; pdotConst]
-    b = [b ; pdot(body)]
+    for (i,pdot_el) in enumerate(pdot(body))
+      if pdot_el != 0
+        pdotConst = zeros(1,7*sim.nb);
+        pdotConst[1 , 3*sim.nb + 4*(body.ID - 1) + i] = 1
+        ICconstraints = [ICconstraints ; pdotConst]
+        b = [b ; pdot(body)[i]]
+      end
+    end
   end
+
 
   #build sim level matricies using initial r and p
   buildɸF(sim)
@@ -103,8 +111,18 @@ function setInitialVelocities(sim::Sim)
 
   #use SVD to find the right pseudoInverse
   U,Σ,V = svd(LHS)
-  Σ = diagm(Σ)
-  Jplus = V*(Σ'*(Σ*Σ')^-1)*U'
+
+  Σplus = zeros(size(Σ)[1])
+  for (i , sv) in enumerate(Σ)
+    if abs(sv) < .00001    #handle values that would blow up!
+      Σplus[i] = 0
+    else
+      Σplus[i] = 1/sv
+    end
+  end
+
+  Σplus = diagm(Σplus)
+  Jplus = V*(Σplus)*U'
 
   #solve for one of an infinite number of solutions for velocities
   sim.qdot = Jplus * RHS   #solution minimizes L2 norm of velocity vector
