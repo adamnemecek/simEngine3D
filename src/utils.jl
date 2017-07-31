@@ -26,6 +26,13 @@ function E(p::Array)
   G = [-e tilde(e) + e0*eye(3)]
 end
 
+""" K matrix is useful for calculating derivatives of ϕλ_(rr,rp,pr,pp) 10.19 slide 9"""
+function K(abar, b)
+  k = 2*[abar'*b          abar'*tilde(b);
+         tilde(abar)*b    abar*b'+ b*abar'- abar'*b*eye(3)];
+
+end
+
 """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
 function P2A(Pi::Array)   #kinematic key formulas
   e0 = Pi[1]

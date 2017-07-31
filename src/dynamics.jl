@@ -321,11 +321,3 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64, newtonMethod::St
   buildrForces(sim)
   buildrTorques(sim)
 end
-
-
-"""
-build the full ψ Matrix for use in QN and MN methods, as specified on 10.19 slide 6
-"""
-function buildFullψ(sim::Sim,h::Float64 ,β₀::Float64 )
-
-end
