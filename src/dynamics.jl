@@ -4,7 +4,7 @@ Dynamics Analysis  - for systems that are underconstrainted, determine the kinem
 q,qdot,qddot and the reaction forces given the constraints and the externally applied
 forces
 """
-function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
+function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001, newtonMethod = "QN")
   if nDOF(sim) == 0
     warn("dynamic analysis should happen with degress of freedom present")
   end
@@ -30,11 +30,11 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001)
     end
 
     if tInd == 2  #use BDF of order to seed future solutions
-      BDF(sim,1,δt,tInd,hist)
+      BDF(sim,1,δt,tInd,newtonMethod,hist)
     end
 
     if tInd >= 3 #perform full integration with BDF order 2
-      BDF(sim,2,δt,tInd,hist)
+      BDF(sim,2,δt,tInd,newtonMethod,hist)
     end
     #store simulation state snapshot
       snapShot(sim,hist,tInd)
@@ -215,17 +215,17 @@ end
 
 """
 solves for the system state information, at a single time step, by following The
-6 steps outlined in 10.19 slide 17, using the quazi newton ψ matrix
+6 steps outlined in 10.19 slide 17, using the specified ψ matrix
 """
-function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #10.19 slide 17
+function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64, newtonMethod::String, hist::History ) #10.19 slide 17
   #interation constants
   mxInterations = 100;
   ϵ = 1e-2;
 
   #handle the different order of BDF
   if BDForder == 1  # 10.14 slide 19 table
-    β₀ =  1
-    α₁ = -1
+    β₀ =  1.0
+    α₁ = -1.0
     Cʳdot = -α₁*rdot(hist,tInd - 1)
     Cᵖdot = -α₁*pdot(hist,tInd - 1)
     Cʳ =    -α₁*r(hist,tInd - 1) + β₀*δt*Cʳdot
@@ -244,6 +244,7 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #
 
   #step 0: prime new step from previous step
   #sim state variables remain unchanged from previous step
+
   #initialize constant matricies useful in construction of ψ
   z21 = zeros(4*sim.nb,3*sim.nb)
   z31 = zeros(sim.nb,3*sim.nb)
@@ -277,11 +278,20 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #
          1/(β₀^2*δt^2)*sim.ɸk                                            ]
 
     #step 3: solve the linear system ψ*Δz = -g
+
     #compute ψ
-    ψ =   [sim.M    z21'     z31'   sim.ɸk_r';
-           z21      sim.Jᵖ   sim.P' sim.ɸk_p';
-           z31      sim.P    z33    z43'     ;
-           sim.ɸk_r sim.ɸk_p z43    z44      ]
+    if newtonMethod == "QN"
+      ψ =   [sim.M    z21'     z31'   sim.ɸk_r';
+             z21      sim.Jᵖ   sim.P' sim.ɸk_p';
+             z31      sim.P    z33    z43'     ;
+             sim.ɸk_r sim.ɸk_p z43    z44      ]
+    elseif newtonMethod == "NR"
+      ψ = buildFullψ(sim,δt,β₀)
+    elseif newtonMethod == "MN"
+      if ν == 0
+        ψ = buildFullψ(sim,δt,β₀)
+      end
+    end
 
     #solve linear system for correction Δz
     Δz = ψ \ -gn
@@ -310,4 +320,12 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64,hist::History ) #
   #build the reaction force vector for archiving in history
   buildrForces(sim)
   buildrTorques(sim)
+end
+
+
+"""
+build the full ψ Matrix for use in QN and MN methods, as specified on 10.19 slide 6
+"""
+function buildFullψ(sim::Sim,h::Float64 ,β₀::Float64 )
+
 end
