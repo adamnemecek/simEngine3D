@@ -321,7 +321,7 @@ function buildF(sim::Sim)    #10.5  slide 27
       #add forces on body i to Fᵃ
       sim.Fᵃ[3*(sda.bodyi.ID - 1) + 1:3*sda.bodyi.ID, 1:1] += Fi(sda)
       #add forces on body j to Fᵃ
-      sim.Fᵃ[3*(sda.bodyj.ID - 1) + 1:3*sda.bodj.ID, 1:1] += Fj(sda)
+      sim.Fᵃ[3*(sda.bodyj.ID - 1) + 1:3*sda.bodyj.ID, 1:1] += Fj(sda)
     end
   end
   sim.F = sim.Fᵐ + sim.Fᵃ

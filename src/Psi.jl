@@ -52,7 +52,7 @@ function buildɸλ_qq(sim::Sim)
   ɸλ_qq = zeros(7*sim.nb,7*sim.nb)
 
   #loop to fill in ɸλ_qq with information from each constraint
-  for (ID,con) in enumerate(cons)
+  for (ID,con) in enumerate(flatCons)
     λ = sim.λk[ID,1]
     bi = con.bodyi
     bj = con.bodyj
@@ -100,4 +100,23 @@ end
 """returns a list of all constraints broken down to their 4 basic constraints"""
 function flattenCons(sim::Sim)
   #***ground is currently neglected***
+  flatCons =  Array{Any}(0)
+  for con in sim.cons
+    flatCons = [flatCons ; recCon(con)]
+  end
+end
+
+"""recursive con search"""
+function recCon(con)
+  conList = Array{Any}(0)
+  if typeof(con) == ground  #do nothing for grounds
+    return
+  end
+  if isdefined(con, :subGCs) #current GCon is high or intermediate level
+    for GC in con.subGCs
+      conList = [conList ; recCon(con)]
+    end
+    return conList
+  end
+  return con #we have hit a base Gcon
 end
