@@ -1,7 +1,5 @@
-"""
-this file contains functions specific to the calculation of the full ψ matrix,
-used in solving either the dynamics problem with NR or MN approach
-"""
+#this file contains functions specific to the calculation of the full ψ matrix,
+#sed in solving either the dynamics problem with NR or MN approach
 
 
 """
@@ -45,18 +43,61 @@ end
 
 
 
+"""builds a portion of Ψ upper left hand corner that come from   ɸλ_qq"""
+function buildɸλ_qq(sim::Sim)
+  #start by flattening the system - we neglect ground terms for now
+  flatCons = flattenCons(sim)
 
+  #init ɸλ_qq
+  ɸλ_qq = zeros(7*sim.nb,7*sim.nb)
 
+  #loop to fill in ɸλ_qq with information from each constraint
+  for (ID,con) in enumerate(cons)
+    λ = sim.λk[ID,1]
+    bi = con.bodyi
+    bj = con.bodyj
 
-"""builds a portion of Ψ upper left hand corner that come from ɸqq"""
-function buildɸλ_qq(sim::Sim,)
-  #start by flattening the system
+    #calculate all ϕλ_qq values for the current constraint, this is a symmetric matrix
+
+    #       ri                          rj                           pi                           pj
+    ϕλ_riri = λ*ϕ_riri(con) ;   ϕλ_rirj = λ*ϕ_rirj(con)  ;   ϕλ_ripi = λ*ϕ_ripi(con)  ;   ϕλ_ripj = λ*ϕ_ripj(con)   #ri
+    ϕλ_rjri = ϕλ_rirj'      ;   ϕλ_rjrj = λ*ϕ_rjrj(con)  ;   ϕλ_rjpi = λ*ϕ_rjpi(con)  ;   ϕλ_rjpj = λ*ϕ_rjpj(con)   #rj
+    ϕλ_piri = ϕλ_ripi'      ;   ϕλ_pirj = ϕλ_rjpi'       ;   ϕλ_pipi = λ*ϕ_pipi(con)  ;   ϕλ_pipj = λ*ϕ_pipj(con)   #pi
+    ϕλ_pjri = ϕλ_ripj'      ;   ϕλ_pjrj = ϕλ_rjpj'       ;   ϕλ_pjpi = ϕλ_pipj'       ;   ϕλ_pjpj = λ*ϕ_pjpj(con)   #pj
+
+    #the above matrix is
+    #  ψ_rr | ψ_rp
+    #-------|--------
+    #  ψ_pr | ψ_pp
+
+    #place value from the current constraint into the system ɸλ_qq matrix
+
+    #ψ_rr
+    ɸλ_qq[rr(bi),rr(bi)] = ϕλ_riri ; ɸλ_qq[rr(bi),rr(bj)] = ϕλ_rirj
+    ɸλ_qq[rr(bj),rr(bi)] = ϕλ_rjri ; ɸλ_qq[rr(bj),rr(bj)] = ϕλ_rjrj
+
+    #ψ_rp
+    ɸλ_qq[rr(bi),pr(bi)] = ϕλ_ripi ; ɸλ_qq[rr(bi),pr(bj)] = ϕλ_ripj
+    ɸλ_qq[rr(bj),pr(bi)] = ϕλ_rjpi ; ɸλ_qq[rr(bj),pr(bj)] = ϕλ_rjpj
+
+    #ψ_pr
+    ɸλ_qq[pr(bi),rr(bi)] = ϕλ_piri ; ɸλ_qq[pr(bi),rr(bj)] = ϕλ_pirj
+    ɸλ_qq[pr(bj),rr(bi)] = ϕλ_pjri ; ɸλ_qq[pr(bj),rr(bj)] = ϕλ_pjrj
+
+    #ψ_pr
+    ɸλ_qq[pr(bi),pr(bi)] = ϕλ_pipi ; ɸλ_qq[pr(bi),pr(bj)] = ϕλ_pipj
+    ɸλ_qq[pr(bj),pr(bi)] = ϕλ_pjpi ; ɸλ_qq[pr(bj),pr(bj)] = ϕλ_pjpj
+
+  end
+  return ɸλ_qq
 end
+
 
 """builds [Jᵖpddot]p which is a term in ψ22"""
 function buildJpPddotp(sim::Sim)
 end
 
 """returns a list of all constraints broken down to their 4 basic constraints"""
-function flattenCons(sim::Sim, )
+function flattenCons(sim::Sim)
+  #***ground is currently neglected***
 end
