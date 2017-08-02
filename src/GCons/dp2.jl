@@ -28,7 +28,10 @@ end
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
 aBari(con::dp2) = pt(con.bodyi,con.ai_head) - pt(con.bodyi,con.ai_tail) #[3x1]
+ai(con::dp2) = A(con.bodyi)*aBari(con)
 PiQj(con::dp2)  = dij(con.bodyi,con.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
+siBar(con::dp2) = pt(con.bodyi,con.Pi)
+sjBar(con::dp2) = pt(con.bodyj,con.Qj)
 
 function ϕ(con::dp2)   #9.26.2016 - slide 14
   """
@@ -51,14 +54,14 @@ function 	𝛾(con::dp2)  #10.7.2016 - slide 8
 RHS of accel equation
 output: [1 x 1] evaluation ν
 """
-aiBar = aBari(con) ;
-Si = pt(con.bodyi,con.Pi) ; Sj = pt(con.bodyj,con.Qj)
-ai = A(con.bodyi)*aiBar
-aidot =B(p(con.bodyi) ,aiBar)*pdot(con.bodyi)
+aidot =B(p(con.bodyi) , aBari(con))*pdot(con.bodyi)
 pdoti = pdot(con.bodyi) ; pdotj = pdot(con.bodyj)
-d_ijdot = dijdot(con.bodyi,con.bodyj,Si,Sj)
+d_ijdot = dijdot(con.bodyi,con.bodyj,siBar(con),siBar(con))
 
-gamma = -ai'B(pdotj,Sj)*pdotj + ai'*B(pdoti,Si)*pdoti - PiQj(con)*B(pdoti,aiBar)*pdoti - 2*aidot'd_ijdot + con.fddot(con.sim.t)
+gamma = -ai(con)'*B(pdotj,sjBar(con))*pdotj +
+         ai(con)'*B(pdoti,siBar(con))*pdoti -
+         PiQj(con)'*B(pdoti,aBari(con))*pdoti -
+         2*aidot'*d_ijdot + con.fddot(con.sim.t)
 end
 
 function ϕ_r(con::dp2)  #9.28.2016 slide 15
@@ -76,12 +79,30 @@ function ϕ_p(con::dp2)  # #9.28.2016 slide 15
 partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
 output:([1x4],[1x4])
 """
-Sibar = pt(con.bodyi,con.Pi) ; Sjbar = pt(con.bodyj,con.Qj)  #these are bars
-ai = A(con.bodyi)*aBari(con)
 Pj = p(con.bodyj) ; Pi = p(con.bodyi)
 
-phi_pi = PiQj(con)'*B(Pi,aBari(con)) - ai'*B(Pi,Sibar)
-phi_pj = ai'*B(Pj,Sjbar)
+phi_pi = PiQj(con)'*B(Pi,aBari(con)) - ai(con)'*B(Pi,siBar(con))
+phi_pj = ai(con)'*B(Pj,sjBar(con))
 
 return phi_pi , phi_pj
 end
+
+
+#---------------------ɸλ_qq values for ψFull------------------------------------
+#ϕ_rr
+ϕ_riri(con::dp2) = zeros(3,3)
+ϕ_rirj(con::dp2) = zeros(3,3)
+ϕ_rjrj(con::dp2) = zeros(3,3)
+
+#ϕ_rp
+ϕ_ripi(con::dp2) = -B(p(con.bodyi),aBari(con))
+ϕ_ripj(con::dp2) = zeros(3,4)
+ϕ_rjpi(con::dp2) = -1*ϕ_ripi(con)
+ϕ_rjpj(con::dp2) = zeros(3,4)
+
+#ϕ_pp
+ϕ_pipi(con::dp2) =  K(aBari(con),PiQj(con)) - K(siBar(con), A(con.bodyi)*aBari(con)) -
+                    B(p(con.bodyi),aBari(con))'*B(p(con.bodyi),siBar(con)) -
+                    B(p(con.bodyi),siBar(con))'*B(p(con.bodyi),aBari(con))
+ϕ_pipj(con::dp2) =  B(p(con.bodyi),aBari(con))'*B(p(con.bodyj),sjBar(con))
+ϕ_pjpj(con::dp2) =  K(sjBar(con),A(con.bodyi)*aBari(con))

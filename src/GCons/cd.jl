@@ -27,6 +27,8 @@ end
 #----------------begin functions associated with dp1----------------------------
 #pseudo - getter methods.
 PiQj(con::cd)  = dij(con.bodyi,con.bodyj,pt(con.bodyi,con.Pi),pt(con.bodyj,con.Qj))
+siBar(con::cd) = pt(con.bodyi,con.Pi)
+sjBar(con::cd) = pt(con.bodyj,con.Qj)
 
 function ϕ(con::cd)   #9.26.2016 - slide 20
   """
@@ -49,10 +51,9 @@ function 	𝛾(con::cd)  #10.7.2016 - slide 8
 RHS of accel equation
 output: [1 x 1] evaluation 𝛾
 """
-SiBar = pt(con.bodyi,con.Pi) ; SjBar = pt(con.bodyj,con.Qj)
 pdoti = pdot(con.bodyi) ; pdotj = pdot(con.bodyj)
 
-gamma = con.c'*B(pdoti,SiBar)*pdoti - con.c'*B(pdotj,SjBar)*pdotj + con.fddot(con.sim.t)
+gamma = con.c'*B(pdoti,siBar(con))*pdoti - con.c'*B(pdotj,sjBar(con))*pdotj + con.fddot(con.sim.t)
 end
 
 function ϕ_r(con::cd)  #9.28.2016 slide 17
@@ -68,11 +69,27 @@ function ϕ_p(con::cd)  # #9.28.2016 slide 17
 partial derivative of ϕ WRT position orientation GC's of both bodyi and bodyj
 output:([1x4],[1x4])
 """
-SjBar = pt(con.bodyj,con.Qj) ; SiBar = pt(con.bodyi,con.Pi)
 Pj = p(con.bodyj) ; Pi = p(con.bodyi)
 
-phi_pi = -con.c'*B(Pi,SiBar)
-phi_pj =  con.c'*B(Pj,SjBar)
+phi_pi = -con.c'*B(Pi,siBar(con))
+phi_pj =  con.c'*B(Pj,sjBar(con))
 
 return phi_pi , phi_pj
 end
+
+#---------------------ɸλ_qq values for ψFull------------------------------------
+#ϕ_rr
+ϕ_riri(con::cd) = zeros(3,3)
+ϕ_rirj(con::cd) = zeros(3,3)
+ϕ_rjrj(con::cd) = zeros(3,3)
+
+#ϕ_rp
+ϕ_ripi(con::cd) = zeros(3,4)
+ϕ_ripj(con::cd) = zeros(3,4)
+ϕ_rjpi(con::cd) = zeros(3,4)
+ϕ_rjpj(con::cd) = zeros(3,4)
+
+#ϕ_pp
+ϕ_pipi(con::cd) = -K(siBar(con), con.c)
+ϕ_pipj(con::cd) = zero(4,4)
+ϕ_pjpj(con::cd) = -K(sjBar(con),con.c)

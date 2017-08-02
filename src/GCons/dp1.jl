@@ -80,3 +80,21 @@ phi_pi = aBarj(con)'*A(con.bodyj)'*B(p(con.bodyi),aBari(con))
 phi_pj = aBari(con)'*A(con.bodyi)'*B(p(con.bodyj),aBarj(con))
 return phi_pi , phi_pj
 end
+
+
+#---------------------ɸλ_qq values for ψFull------------------------------------
+#ϕ_rr
+ϕ_riri(con::dp1) = zeros(3,3)
+ϕ_rirj(con::dp1) = zeros(3,3)
+ϕ_rjrj(con::dp1) = zeros(3,3)
+
+#ϕ_rp
+ϕ_ripi(con::dp1) = zeros(3,4)
+ϕ_ripj(con::dp1) = zeros(3,4)
+ϕ_rjpi(con::dp1) = zeros(3,4)
+ϕ_rjpj(con::dp1) = zeros(3,4)
+
+#ϕ_pp
+ϕ_pipi(con::dp1) = K(aBari(con), A(con.bodyj)*aBarj(con))
+ϕ_pipj(con::dp1) = B(p(con.bodyi),aBari(con))'*B(p(con.bodyj),aBarj(con))
+ϕ_pjpj(con::dp1) = K(aBarj(con), A(con.bodyi)*aBari(con))
