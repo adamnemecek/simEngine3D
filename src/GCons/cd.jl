@@ -91,5 +91,5 @@ end
 
 #ϕ_pp
 ϕ_pipi(con::cd) = -K(siBar(con), con.c)
-ϕ_pipj(con::cd) = zero(4,4)
+ϕ_pipj(con::cd) = zeros(4,4)
 ϕ_pjpj(con::cd) = -K(sjBar(con),con.c)

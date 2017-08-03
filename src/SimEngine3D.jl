@@ -37,6 +37,7 @@ include("./GCons/ground.jl")
 include("./kinematics.jl")
 include("./inverseDynamics.jl")
 include("./dynamics.jl")
+include("./Psi.jl")
 include("./utils.jl")
 
 #-------------------------plotting and exporting--------------------------------
