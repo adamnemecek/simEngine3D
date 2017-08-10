@@ -166,9 +166,9 @@ SE3D.addConstraint!(sim,rj3)
 #define points
 Pi = [0 0 0]'  #Pi and Qj are on the translational axis
 Qj = [0 0 0]'
-ai_head = [0 1 0]'
+ai_head = [1 0 0]'
 bi_head = [0 1 0]'
-aj_head = [1 0 0]'
+aj_head = [0 1 0]'
 cj_head = [0 0 1]'
 
 #add points to bodies
@@ -187,43 +187,66 @@ SE3D.addConstraint!(sim,tj4)
 
 #---------------------------set up TSDA's---------------------------------------
 
-#-------------TSDA 1--------------
-#points
+# #-------------TSDA 1--------------
+# #points
+# Pi_head = [0 -.05 0]'
+# Qj_head = [0 0 0]'
+#
+# SE3D.addPoint(sim.bodies[5] , Pi_head) #index 5
+# SE3D.addPoint(sim.bodies[3] , Qj_head) #index 4
+#
+#
+# #hardcode the indecies
+# Pi_headID = 5; Qj_headID = 4;
+# k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
+#
+# #add RSDA element
+# rsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[3],Pi_headID,Qj_headID,k,l₀,c)
+# SE3D.addSDA!(sim,rsda1)
+#
+# #-------------TSDA 2--------------
+# #points
+# Pi_head = [0 .05 0]'
+# Qj_head = [0 0 0]'
+#
+# SE3D.addPoint(sim.bodies[5] , Pi_head) #index 6
+# SE3D.addPoint(sim.bodies[4] , Qj_head) #index 4
+#
+#
+# #hardcode the indecies
+# Pi_headID = 6; Qj_headID = 4;
+# k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
+#
+# #add RSDA element
+# rsda2 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[4],Pi_headID,Qj_headID,k,l₀,c)
+# SE3D.addSDA!(sim,rsda2)
+
+#--------------------------test TSDA--------------------------------------
+
 Pi_head = [0 -.05 0]'
-Qj_head = [0 0 0]'
+Qj_head = [0 -.05 .5]'
 
 SE3D.addPoint(sim.bodies[5] , Pi_head) #index 5
-SE3D.addPoint(sim.bodies[3] , Qj_head) #index 7
+SE3D.addPoint(sim.bodies[2] , Qj_head) #index 4
 
 
 #hardcode the indecies
-Pi_headID = 5; Qj_headID = 7;
-k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
+Pi_headID = 5; Qj_headID = 4;
+#k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
+k = 1000 ; c = 20 ; l₀ = .5
 
-#add RSDA element
-rsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[3],Pi_headID,Qj_headID,k,l₀,c)
-SE3D.addSDA!(sim,rsda1)
+#add TSDA element
+tsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[2],Pi_headID,Qj_headID,k,l₀,c)
+SE3D.addSDA!(sim,tsda1)
 
-#-------------TSDA 2--------------
-#points
-Pi_head = [0 .05 0]'
-Qj_head = [0 0 0]'
+#------------------------------------------------------------------------
 
-SE3D.addPoint(sim.bodies[5] , Pi_head) #index 8
-SE3D.addPoint(sim.bodies[4] , Qj_head) #index 7
-
-
-#hardcode the indecies
-Pi_headID = 8; Qj_headID = 7;
-k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
-
-#add RSDA element
-rsda2 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[4],Pi_headID,Qj_headID,k,l₀,c)
-SE3D.addSDA!(sim,rsda2)
-
-
-#---------------------set system initial velocities-----------------------------
-SE3D.set_pdot!(sim.bodies[2], SE3D.ωbar2pdot(sim.bodies[2],[0 0 2]'))  #L2 spinning at 2 rad/s
+# #
+# #---------------------set system initial velocities-----------------------------
+#SE3D.set_pdot!(sim.bodies[2], SE3D.ωbar2pdot(sim.bodies[2],[0 0 2]'))  #L2 spinning at 2 rad/s
+ω = 2 #rad/seconds
+#SE3D.set_rdot!(sim.bodies[4], [-ω*(.05 + cos(pi/6)) 0 0]' )  #L2 spinning at 2 rad/s
+#SE3D.set_rdot!(sim.bodies[3], [ω*(.05 + cos(pi/6)) 0 0]' )
 
 
 #-----------------------initialize simulation-----------------------------------
@@ -245,4 +268,4 @@ toc()
 #------------------------------plot---------------------------------------------
 path = "./unitySim/Assets/data/flyballGovernor/q_rot.csv"
 #SE3D.plotReactionTorque(penID,hist)
-#SE3D.exportKinematicsToCSV(hist ,path , SE3D.Rx(-pi/2))
+#SE3D.exportKinematicsToCSV(hist ,path, SE3D.Rx(-pi/2))
