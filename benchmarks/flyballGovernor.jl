@@ -17,7 +17,8 @@ SE3D.addGround!(sim) #g is in -z
 #general mass properties for system
 ρ = 3000 #kg/m³
 h = 1; r = .005 ; v = pi*r^2*h
-m = v*ρ ; Jmaj = m/12*(3*r^2 + h^2); Jmin = .5*m*r^2  #mass, major axis inertia, minor axis inertia
+#m = v*ρ ; Jmaj = m/12*(3*r^2 + h^2); Jmin = .5*m*r^2  #mass, major axis inertia, minor axis inertia
+m = 10 ; Jmaj = m/12*(3*r^2 + h^2); Jmin = .5*m*r^2
 J = zeros(3,3)
 
 #------link 1----------
@@ -79,7 +80,8 @@ p = [1 ; 0; 0; 0]
 
 #mass properties - hollow right circular cylinder
 Ro = .05 ; Ri =.005 ; h = .1
-m = pi*ρ*h*(Ro^2 - Ri^2)
+#m = pi*ρ*h*(Ro^2 - Ri^2)
+m  = 2
 Jmaj = m/2*(3*Ro^2 + 3*Ri^2 + h^2) ;   Jmin = m/2*(Ro^2 + Ri^2)
 J = zeros(3,3)
 J[1,1] = Jmaj
@@ -188,63 +190,43 @@ SE3D.addConstraint!(sim,tj4)
 #---------------------------set up TSDA's---------------------------------------
 
 # #-------------TSDA 1--------------
-# #points
-# Pi_head = [0 -.05 0]'
-# Qj_head = [0 0 0]'
-#
-# SE3D.addPoint(sim.bodies[5] , Pi_head) #index 5
-# SE3D.addPoint(sim.bodies[3] , Qj_head) #index 4
-#
-#
-# #hardcode the indecies
-# Pi_headID = 5; Qj_headID = 4;
-# k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
-#
-# #add RSDA element
-# rsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[3],Pi_headID,Qj_headID,k,l₀,c)
-# SE3D.addSDA!(sim,rsda1)
-#
-# #-------------TSDA 2--------------
-# #points
-# Pi_head = [0 .05 0]'
-# Qj_head = [0 0 0]'
-#
-# SE3D.addPoint(sim.bodies[5] , Pi_head) #index 6
-# SE3D.addPoint(sim.bodies[4] , Qj_head) #index 4
-#
-#
-# #hardcode the indecies
-# Pi_headID = 6; Qj_headID = 4;
-# k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
-#
-# #add RSDA element
-# rsda2 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[4],Pi_headID,Qj_headID,k,l₀,c)
-# SE3D.addSDA!(sim,rsda2)
-
-#--------------------------test TSDA--------------------------------------
-
+#points
 Pi_head = [0 -.05 0]'
-Qj_head = [0 -.05 .5]'
+Qj_head = [0 0 0]'
 
 SE3D.addPoint(sim.bodies[5] , Pi_head) #index 5
-SE3D.addPoint(sim.bodies[2] , Qj_head) #index 4
+SE3D.addPoint(sim.bodies[3] , Qj_head) #index 4
 
 
 #hardcode the indecies
 Pi_headID = 5; Qj_headID = 4;
-#k = 8*10^5 ; c = 4*10^4 ; l₀ = .5
 k = 1000 ; c = 20 ; l₀ = .5
 
-#add TSDA element
-tsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[2],Pi_headID,Qj_headID,k,l₀,c)
-SE3D.addSDA!(sim,tsda1)
+#add RSDA element
+rsda1 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[3],Pi_headID,Qj_headID,k,l₀,c)
+SE3D.addSDA!(sim,rsda1)
 
-#------------------------------------------------------------------------
+# #-------------TSDA 2--------------
+#points
+Pi_head = [0 .05 0]'
+Qj_head = [0 0 0]'
 
-# #
+SE3D.addPoint(sim.bodies[5] , Pi_head) #index 6
+SE3D.addPoint(sim.bodies[4] , Qj_head) #index 4
+
+
+#hardcode the indecies
+Pi_headID = 6; Qj_headID = 4;
+k = 1000 ; c = 20 ; l₀ = .5
+
+#add RSDA element
+rsda2 = SE3D.TSDA(sim,sim.bodies[5],sim.bodies[4],Pi_headID,Qj_headID,k,l₀,c)
+SE3D.addSDA!(sim,rsda2)
+
+
 # #---------------------set system initial velocities-----------------------------
-#SE3D.set_pdot!(sim.bodies[2], SE3D.ωbar2pdot(sim.bodies[2],[0 0 2]'))  #L2 spinning at 2 rad/s
-ω = 2 #rad/seconds
+SE3D.set_pdot!(sim.bodies[2], SE3D.ωbar2pdot(sim.bodies[2],[0 0 2]'))  #L2 spinning at 2 rad/s
+ω = 4 #rad/seconds
 #SE3D.set_rdot!(sim.bodies[4], [-ω*(.05 + cos(pi/6)) 0 0]' )  #L2 spinning at 2 rad/s
 #SE3D.set_rdot!(sim.bodies[3], [ω*(.05 + cos(pi/6)) 0 0]' )
 
@@ -268,4 +250,4 @@ toc()
 #------------------------------plot---------------------------------------------
 path = "./unitySim/Assets/data/flyballGovernor/q_rot.csv"
 #SE3D.plotReactionTorque(penID,hist)
-#SE3D.exportKinematicsToCSV(hist ,path, SE3D.Rx(-pi/2))
+SE3D.exportKinematicsToCSV(hist ,path, SE3D.Rx(-pi/2))
