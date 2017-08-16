@@ -84,7 +84,7 @@ function buildɸλ_qq(sim::Sim)
     ɸλ_qq[pr(bi),rr(bi)] = ϕλ_piri ; ɸλ_qq[pr(bi),rr(bj)] = ϕλ_pirj
     ɸλ_qq[pr(bj),rr(bi)] = ϕλ_pjri ; ɸλ_qq[pr(bj),rr(bj)] = ϕλ_pjrj
 
-    #ψ_pr
+    #ψ_pp
     ɸλ_qq[pr(bi),pr(bi)] = ϕλ_pipi ; ɸλ_qq[pr(bi),pr(bj)] = ϕλ_pipj
     ɸλ_qq[pr(bj),pr(bi)] = ϕλ_pjpi ; ɸλ_qq[pr(bj),pr(bj)] = ϕλ_pjpj
 

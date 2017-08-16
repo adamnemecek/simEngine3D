@@ -33,15 +33,14 @@ function K(abar, b)
 
 end
 
+
+
 """takes a 4x1 array of euler parameters and returns a 3x3 rotation matrix"""
-function P2A(Pi::Array)   #kinematic key formulas
-  e0 = Pi[1]
-  e = Pi[2:4]
-  E =  [-e  tilde(e) + e0*eye(3)]
-  G =  [-e -tilde(e) + e0*eye(3)]
-  A = E*G'
-  return A
-end
+P2A(p::Array) = E(p)*(G(p)')
+
+"""orientational representation converters"""
+pdot2ωbar(p::Array, pdot::Array) = 2*G(p)*pdot
+pddot2ωdotbar(p::Array, pddot::Array) = 2*G(p)*pddot
 
 """takes a 3x3 rotation matrix and converts it to a 4x1 array of euler parameters"""
 function A2P(A::Array) #9.21 slide 20

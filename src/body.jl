@@ -23,6 +23,7 @@ end
 rr(body::Body) = 3*(body.ID-1)+1:3*body.ID
 pr(body::Body) = 3*body.sim.nb+4(body.ID-1)+1:3*body.sim.nb+4*body.ID
 
+
 #-----------------pseudo getter methods----------------------------------------
 """retrieve a point from the point body point matrix pts"""
 pt(bd::Body,ind::Int) =  bd.pts[:,ind:ind]

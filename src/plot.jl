@@ -1,17 +1,41 @@
 #imports
-  using Plots ; gr()
+  #using Plots ; gr()
+  using Plots ; pyplot()
   using DataFrames
 
 
-function plot2DKinematics(bodyID,hist)
+function plot2DKinematics(bodyID,hist, sbarP = [0 0 0]')
   """
   plots the position vs time for the bodies requested via their ID Number
   """
-    #get time , position, velocity, acceleration for specified body
+  #get time , position, velocity, acceleration for specified body
   t = hist.tgrid
-  pos = hist.q[3*(bodyID-1)+1:3*bodyID ,:]
-  vel = hist.qdot[3*(bodyID-1)+1:3*bodyID ,:]
-  acc = hist.qddot[3*(bodyID-1)+1:3*bodyID ,:]
+
+  r = hist.q[3*(bodyID-1)+1:3*bodyID ,:]
+  rdot = hist.qdot[3*(bodyID-1)+1:3*bodyID ,:]
+  rddot = hist.qddot[3*(bodyID-1)+1:3*bodyID ,:]
+
+  p = hist.q[3*hist.nb+4(bodyID-1)+1:3*hist.nb+4*bodyID ,:]
+  pdot = hist.qdot[3*hist.nb+4(bodyID-1)+1:3*hist.nb+4*bodyID ,:]
+  pddot = hist.qddot[3*hist.nb+4(bodyID-1)+1:3*hist.nb+4*bodyID ,:]
+
+  #initialize kinematics matricies
+  pos = zeros(3,size(hist.tgrid)[1])
+  vel = zeros(3,size(hist.tgrid)[1])  #point on body
+  acc = zeros(3,size(hist.tgrid)[1])  #point on body
+
+  #calculate translational kinematics of the specified points
+  for instant in 1:size(hist.tgrid)[1]
+    #calculate angular kinematic terms
+    A = P2A(p[:,instant])
+    ωbar = pdot2ωbar(p[:,instant], pdot[:,instant])
+    ωdotbar = pddot2ωdotbar(p[:,instant], pddot[:,instant])
+
+    #form translational kinematics
+    pos[:,instant] = r[:,instant] + A*sbarP
+    vel[:,instant] = rdot[:,instant] + A*tilde(ωbar)*sbarP
+    acc[:,instant] = rddot[:,instant] + (A*tilde(ωdotbar) + A*tilde(ωbar)*tilde(ωbar))*sbarP
+  end
 
   #reformat to x,y,z for plotting routine
   x = [pos[1:1,:] ; vel[1:1,:] ; acc[1:1,:]]'
@@ -19,7 +43,7 @@ function plot2DKinematics(bodyID,hist)
   z = [pos[3:3,:] ; vel[3:3,:] ; acc[3:3,:]]'
 
   #setup plot variables
-  titles = ["body$(bodyID) position"  "velocity"  "acceleration"]
+  titles = ["body$(bodyID) point $(sbarP) position"  "velocity"  "acceleration"]
   labels = ["x" "x" "x" "y" "y" "y" "z" "z" "z"]
   ylabels = ["m" "m/s" "m/s²"]
   xlabels = ["t" "t" "t"]
@@ -27,32 +51,6 @@ function plot2DKinematics(bodyID,hist)
   #execute plot
   plot(t,[x y z], layout = (3,1), title = titles, label = labels)
   plot!(ylabel = ylabels)
-end
-
-function plot2DKinematics(bodyID,hist,point)
-  """
-  plots the position vs time for a point on the body requested
-  **only position is currently implemented.**
-  """
-    #get time , position, velocity, acceleration for specified body
-  t = hist.tgrid
-  r = hist.q[3*(bodyID-1)+1:3*bodyID ,:]
-  p = hist.q[3*hist.nb+4(bodyID-1)+1:3*hist.nb+4*bodyID , :]
-  r_P = zeros(3,size(hist.tgrid)[1])  #point on body
-
-  #calcuate the local position
-  for instant in 1:size(hist.tgrid)[1]
-    r_P[:,instant] = r[:,instant] + P2A(p[:,instant])*point
-  end
-
-  #setup plot variables
-   title = "position of point $point on body$(bodyID)"
-   labels = ["x" "y" "z"]
-   ylabels = "m"
-   xlabels = "t"
-
-  #execute plot
-  plot(t, r_P', title = title, label = labels, ylabel = ylabels, xlabel = xlabels)
 end
 
 
