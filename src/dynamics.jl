@@ -37,7 +37,7 @@ function DynamicsAnalysis(sim::Sim,tStart,tStop,δt = .001, newtonMethod = "QN")
       BDF(sim,2,δt,tInd,newtonMethod,hist)
     end
     #store simulation state snapshot
-      snapShot(sim,hist,tInd)
+    snapShot(sim,hist,tInd)
     tInd += 1
   end
 
@@ -320,4 +320,7 @@ function BDF(sim::Sim,BDForder::Int64,δt::Float64,tInd::Int64, newtonMethod::St
   #build the reaction force vector for archiving in history
   buildrForces(sim)
   buildrTorques(sim)
+
+  #add number of iterations to converge to history
+  updateIter(hist,tInd,ν)
 end

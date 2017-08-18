@@ -1,16 +1,17 @@
 type History
   #kinematics of interest
-  q::Array{Float64}       #[7nb x t]array of system generalized coordinates = [r;p]
-  qdot::Array{Float64}    #[7nb x t]array of system generalized coordinates = [rdot;pdot]
-  qddot::Array{Float64}   #[7nb x t]array of system generalized coordinates = [rdot;pdot]
-  nb::Int64               #number of bodies in the system
+  q::Array{Float64}         #[7nb x t]array of system generalized coordinates = [r;p]
+  qdot::Array{Float64}      #[7nb x t]array of system generalized coordinates = [rdot;pdot]
+  qddot::Array{Float64}     #[7nb x t]array of system generalized coordinates = [rdot;pdot]
+  nb::Int64                 #number of bodies in the system
   #dynamics
   rForces::Array{Float64}  #[3nb x nc_k x t] vector of system reaction forces
   rTorques::Array{Float64} #[3nb x nc_k x t]  vector of system reaction torques
   Fᵃ::Array{Float64}       #[3nb x nc_k x t] vector of system reaction forces
-  nbarᵃ::Array{Float64}     #[3nb x nc_k x t] vector of system reaction forces
+  nbarᵃ::Array{Float64}    #[3nb x nc_k x t] vector of system reaction forces
 
   νerror::Array{Float64}   #[1 x t]     vector of velocity constraint violations
+  convg::Array{Float64}    #[1 xt]      vector of interation count to converge
   tgrid::FloatRange{Float64}
 
   #constructor
@@ -27,23 +28,30 @@ type History
     nbarᵃ = zeros(3*sim.nb,length(tgrid))
 
     νerror = zeros(1,length(tgrid))
+    convg  = zeros(1,length(tgrid))
 
-    new(q,qdot,qddot,nb,rForces,rTorques,Fᵃ,nbarᵃ,νerror,tgrid)
+
+    new(q,qdot,qddot,nb,rForces,rTorques,Fᵃ,nbarᵃ,νerror,convg,tgrid)
   end
 end
 
 """store the system state from a single instant to the system history"""
 function snapShot(sim::Sim,hist::History,tInd::Int64)
-    hist.q[:,tInd] = sim.q
-    hist.qdot[:,tInd] = sim.qdot
-    hist.qddot[:,tInd] = sim.qddot
+  hist.q[:,tInd] = sim.q
+  hist.qdot[:,tInd] = sim.qdot
+  hist.qddot[:,tInd] = sim.qddot
 
-    hist.rForces[:,:,tInd] = sim.rForces
-    hist.rTorques[:,:,tInd] = sim.rTorques
-    hist.Fᵃ[:,tInd] = sim.Fᵃ
-    hist.nbarᵃ[:,tInd] = sim.nbar
+  hist.rForces[:,:,tInd] = sim.rForces
+  hist.rTorques[:,:,tInd] = sim.rTorques
+  hist.Fᵃ[:,tInd] = sim.Fᵃ
+  hist.nbarᵃ[:,tInd] = sim.nbar
 
-    hist.νerror[1,tInd] = νerror(sim)
+  hist.νerror[1,tInd] = νerror(sim)
+end
+
+"""update the number of interations to convergence from bdf function"""
+function updateIter(hist::History,tInd::Int64,ν::Int64)
+  hist.convg[1,tInd] = ν
 end
 
 #-----------------------------extractor functions-------------------------------------
@@ -85,7 +93,7 @@ function rTorque(hist::History, bdID::Int64 , λID::Int64)
   return rTorque
 end
 
-"""returns the time history a reaction torque caused by λ_i"""
+"""returns the time history a reaction force caused by λ_i"""
 function rForce(hist::History, bdID::Int64 , λID::Int64)
   rForce = zeros(3,length(hist.tgrid))
   for instant in 1:length(hist.tgrid)

@@ -53,7 +53,46 @@ function plot2DKinematics(bodyID,hist, sbarP = [0 0 0]')
   plot!(ylabel = ylabels)
 end
 
+"""compare acceleration for two different integration method trials"""
+function diffrddot(hist1,label1::String,hist2,label2::String,bodyID)
+  #calculate diff
+  t = hist1.tgrid
+  rddot₁ = hist1.qddot[3*(bodyID-1)+1:3*bodyID ,:]
+  rddot₂ = hist2.qddot[3*(bodyID-1)+1:3*bodyID ,:]
+  diff = rddot₁ - rddot₂
 
+  #setup plot variables
+  titles = "difference in acceleration between $(label1) and $(label2) approaches"
+  ylabels = "acc [m/s²]"
+  labels = ["xAccel", "yAccel", "zAccel"]
+  xlabels = "t"
+
+
+  plot(t, diff', layout = (3,1), title = titles, label = labels , ylabel = ylabels, xlabel = xlabels)
+
+end
+
+
+"""plots number of iterations to converge for different histories"""
+function plotIter2Convg(histList,labels)
+  #init plot
+  plot()
+  t = histList[1].tgrid
+
+  #plot
+  for hist in histList
+    plot!(t,hist.convg')
+  end
+
+  #setup plot variables
+  titles = "iterations to convergence for $(labels) dynamics methods"
+  ylabels = "Iterations"
+  xlabels = "t"
+
+  #execute plot
+  plot!(title = titles, label = labels, ylabel = ylabels, xlabel = xlabels)
+
+end
 function plotNetReactionTorque(bodyID, hist)
   """
   plots the reaction torque vs time for the bodies requested via their ID Number
@@ -64,7 +103,7 @@ function plotNetReactionTorque(bodyID, hist)
   nibar = nbar[3*(bodyID-1)+1:3*bodyID , :]
 
   #setup plot variables
-  titles = "torque on body $(bodyID)"
+  titles = "net torque on body $(bodyID)"
   labels = ["nx" "ny" "nz"]
   ylabels = "n*m"
   xlabels = "t"
