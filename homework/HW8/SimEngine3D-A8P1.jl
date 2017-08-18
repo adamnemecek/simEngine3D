@@ -1,11 +1,12 @@
 # ME 751 HW 8 problem 1
 #Alex Dawson-Elli
 
-#problem  1 - perform  10 seconds of Dynamic analysis of a double pendulum using QN
+#problem  1 - perform  10 seconds of Dynamic analysis of single using QN
 # and plot:
-#     -kinematics of body2, kinematics of body 3
-#     -norm 2 of the velocity constraint violations
-#report the execution time
+#     -plot torque as a function of time
+#     -list the excecution statistics
+
+
 #includes
 include("../../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
@@ -57,7 +58,6 @@ if DOF == 1
   SE3D.addPoint(sim.bodies[1] , bi_head) #index 4
   SE3D.addPoint(sim.bodies[2] , Qj)      #index 2
   SE3D.addPoint(sim.bodies[2] , cj_head) #index 3
-  SE3D.addPoint(sim.bodies[2] , bodyj_x) #index 4
 
   #hardcode the indecies
   PiID = 1; QjID = 2; ai_headID = 3; bi_headID = 4; cj_headID = 3 ; bodyj_xID = 4
@@ -111,10 +111,10 @@ tstop = 10
 δt = .01
 
 tic()
-#hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
+hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
 toc()
 
 #plot
 penID = 2 #body 2
-#SE3D.plotReactionTorque(penID,hist)  #develop this!
+#SE3D.plotNetReactionTorque(penID,hist)
 #SE3D.exportKinematicsToCSV("./")

@@ -67,10 +67,15 @@ tstart = 0
 tstop = 10
 δt = .01
 
-
+tic()
 hist = SE3D.kinematicsAnalysis(sim,tstart,tstop,δt)
+toc()
 
 #plot
 penID = 2 #body 2
+
+#plot of the origin
 SE3D.plot2DKinematics(penID,hist)
-#SE3D.exportKinematicsToCSV("./")
+
+#plot of point Q
+SE3D.plot2DKinematics(penID,hist,[-2 0 0]')

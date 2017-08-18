@@ -81,5 +81,5 @@ toc()
 
 #plot
 penID = 2 #body 2
-#SE3D.plotReactionTorque(penID,hist)  #develop this!
+#SE3D.plotReactionTorque(penID,hist)
 #SE3D.exportKinematicsToCSV(hist, "test.csv")

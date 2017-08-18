@@ -1,15 +1,19 @@
-# ME 751 HW 8 problem 2
+# ME 751 HW 9 problem 2
 #Alex Dawson-Elli
 
-#problem  2 - perform a 10 seconds of Dynamic analysis of a double pendulum using QN
-# and plot:
-#     -kinematics of body2, kinematics of body 3
-#     -norm 2 of the velocity constraint violations
-#report the execution time
+#problem  1 - perform  10 seconds of Dynamic analysis on the double pendulum
+#   - compare the accelerations for QN, MN, NR methods
+#   - plot the iterations to converge for these methods
+
 
 #includes
+methods = ["QN" , "MN" , "NR"]
+histList = Array{Any}(3)
+
 include("../../src/SimEngine3D.jl")
 using SimEngine3D ; SE3D = SimEngine3D;  #alias
+
+for i in 1:3
 
 #define the simulation
 sim = SE3D.Sim(3)
@@ -112,13 +116,17 @@ SE3D.initForAnalysis(sim)
 tstart = 0
 tstop = 10
 δt = .01
-tic()
-hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
-toc()
-#plot
-penID = 2 #body 2
 
+tic()
+histList[i] = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt, methods[i])
+toc()
+end
+
+
+
+#------------------------------plot--------------------------------------------
+penID = 3
+# SE3D.diffrddot(histList[1],"QN",histList[3],"NR",2)
+# SE3D.diffrddot(histList[2],"MN",histList[3],"NR",2)
 #
-#SE3D.plot2DKinematics(2,hist)
-#SE3D.plot2DKinematics(2,hist)
-#SE3D.plotVelocityViolations(2,hist)
+# SE3D.plotIter2Convg(histList,methods)
