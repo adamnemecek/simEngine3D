@@ -250,4 +250,4 @@ toc()
 #------------------------------plot---------------------------------------------
 path = "./unitySim/Assets/data/flyballGovernor/q_rot.csv"
 #SE3D.plotReactionTorque(penID,hist)
-SE3D.exportKinematicsToCSV(hist ,path, SE3D.Rx(-pi/2))
+#SE3D.exportKinematicsToCSV(hist ,path, SE3D.Rx(-pi/2))

@@ -78,7 +78,7 @@ tstop = 10
 δt = .01
 
 tic()
-hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt)
+hist = SE3D.DynamicsAnalysis(sim,tstart,tstop,δt, "NR")
 toc()
 
 #plot

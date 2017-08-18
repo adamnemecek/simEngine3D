@@ -17,7 +17,8 @@ function buildFullψ(sim::Sim, h::Float64, β₀::Float64 )
           z12' buildJpPddot_p(sim)]
 
   #build ψUL (Upper Left), which is the only part of ψFull different from QN
-  ψUL = h^2*β₀^2 * (ɸλ_qq + Jpp)  + Inertia  #10.19 slide 6
+  #ψUL = h^2*β₀^2 * (ɸλ_qq + Jpp)  + Inertia  #10.19 slide 6
+  ψUL = h^2*β₀^2*(ɸλ_qq)  + Inertia  #10.19 slide 6
 
   #------------------build the fullΨ matrix--------------------------------
   #extract ψnn from the previously constructed ψUL matrix
