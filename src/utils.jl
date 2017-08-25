@@ -29,7 +29,7 @@ end
 """ K matrix is useful for calculating derivatives of ϕλ_(rr,rp,pr,pp) 10.19 slide 9"""
 function K(abar, b)
   k = 2*[abar'*b          abar'*tilde(b);
-         tilde(abar)*b    abar*b'+ b*abar'- (abar'*b)[1]*eye(3)];
+         tilde(abar)*b    abar*b'+ b*abar' - (abar'*b)[1]*eye(3)];
 
 end
 

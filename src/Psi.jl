@@ -17,8 +17,8 @@ function buildFullψ(sim::Sim, h::Float64, β₀::Float64 )
           z12' buildJpPddot_p(sim)]
 
   #build ψUL (Upper Left), which is the only part of ψFull different from QN
-  #ψUL = h^2*β₀^2 * (ɸλ_qq + Jpp)  + Inertia  #10.19 slide 6
-  ψUL = h^2*β₀^2*(ɸλ_qq)  + Inertia  #10.19 slide 6
+  ψUL = h^2*β₀^2 * (ɸλ_qq + Jpp)  + Inertia  #10.19 slide 6
+  #ψUL = h^2*β₀^2*(ɸλ_qq)  + Inertia  #10.19 slide 6
 
   #------------------build the fullΨ matrix--------------------------------
   #extract ψnn from the previously constructed ψUL matrix
@@ -99,7 +99,7 @@ function buildJpPddot_p(sim::Sim)
   for body in sim.bodies
     a = body.J*G(p(body))*pddot(body)
     T = [0 -a' ;
-         a tilde(a)]
+         a -tilde(a)]
     JpPddot_p[4(body.ID-1)+1:4*body.ID,4(body.ID-1)+1:4*body.ID] = -4*G(p(body))'*body.J*G(pddot(body)) + 4*T
   end
   return JpPddot_p
